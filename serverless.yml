@@ -1,0 +1,27 @@
+component: express
+name: ${env:project}
+inputs:
+  region: ${env:region}
+  # Express application source code.
+  src: ./
+  # Permissions required for the AWS Lambda function to interact with other resources
+  roleName: ${output:permissions.name}
+  # Enable this when you want to set a custom domain.
+  # domain: api-${env:domain}
+  # Environment variables
+  env:
+    # AWS DynamoDB Table name. Needed for the code to access it.
+    db: ${output:database.name}
+    # AWS DynamoDB Table Index name. Needed for the code to access it.
+    dbIndex1: ${output:database.indexes.gsi1.name}
+    dbIndex2: ${output:database.indexes.gsi2.name}
+    # A secret token to sign the JWT tokens with.
+    tokenSecret: ${env:token} # Change to secret via environment variable: ${env:tokenSecret}
+    SENDGRID_API_KEY: ${env:SENDGRID_API_KEY}
+    SG_MAIL_TPL_01: d-83640a5d3c964acb83813bac5a8b8005
+    SG_MAIL_TPL_02: d-3199373cd6b74856a68627a601563e29
+    SG_MAIL_TPL_03: d-c4ff76a1a3c146e89f7618adf281d01e
+    BUCKET: ${env:upload_bucket}
+    REGION: ${env:region}
+    access_key_id: ${env:AWS_ACCESS_KEY_ID}
+    secret_access_key: ${env:AWS_SECRET_ACCESS_KEY}
