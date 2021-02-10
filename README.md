@@ -9,9 +9,15 @@ Also, some routes would also need JWT tokens, so you need to pass `-H 'authoriza
 These routes will have an `*` as indicators.
 
 ## [Auth / User](docs/USERS.md)
-1. [Register leader](docs/USERS.md#register)  
+1. [Sign up](docs/USERS.md#register)  
+   ```sh
+   curl -X POST /users/register
+   ```
 2. [Activate user](docs/USERS.md#activate)  
-3. [Login](docs/USERS.md#login)  
+3. [Login](docs/USERS.md#login)   
+   ```sh
+   curl -X POST /users/login
+   ```
 4. [Recover account](docs/USERS.md#account-recovery)  
     
 ---   
