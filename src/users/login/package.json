@@ -1,0 +1,23 @@
+{
+  "name": "armada",
+  "version": "2.0.0",
+  "description": "Create an Armada user",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "armada"
+  ],
+  "author": "https://github.com/g-six",
+  "license": "MIT",
+  "dependencies": {
+    "aws-lambda": "^1.0.6",
+    "aws-sdk": "^2.846.0",
+    "bcryptjs": "^2.4.3",
+    "short-id": "0.1.0-1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.2"
+  }
+}

@@ -1,36 +1,14 @@
-### README
-# Armada API v2
-Please check regularly for updates or changes.
+# Welcome to your CDK TypeScript project!
 
-## Header payload
-Please pass `-H 'content-type: application/json'`.
+This is a blank project for TypeScript development with CDK.
 
-Also, some routes would also need JWT tokens, so you need to pass `-H 'authorization: Bearer <token from successful login>`.
-These routes will have an `*` as indicators.
+The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
-## [Auth / User](docs/USERS.md)
-1. [Sign up](docs/USERS.md#register)  
-   ```sh
-   curl -X POST /users/register
-   ```
-2. [Activate user](docs/USERS.md#activate)  
-   ```sh
-   curl /users/activate?x=&y=&z=
-   ```
-3. [Login](docs/USERS.md#login)   
-   ```sh
-   curl -X POST /users/login
-   ```
-4. [Recover account](docs/USERS.md#account-recovery)  
-   ```sh
-   curl -X POST /users/forgot-password
+## Useful commands
 
-   # Then use the token created from the above request
-   # as BEARER, to submit PATCH request below
-
-   curl -X PATCH /users/password
-   ```
-    
----   
-**Some of these routes will rely on JWT tokens.  You can get the tokens by logging in.**
-
+ * `npm run build`   compile typescript to js
+ * `npm run watch`   watch for changes and compile
+ * `npm run test`    perform the jest unit tests
+ * `cdk deploy`      deploy this stack to your default AWS account/region
+ * `cdk diff`        compare deployed stack with current state
+ * `cdk synth`       emits the synthesized CloudFormation template
