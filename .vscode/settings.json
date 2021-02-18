@@ -1,0 +1,9 @@
+{
+    "editor.wordWrap": "on",
+    "files.exclude": {
+        "**/*.generated.*": true,
+        "lambdas/**": true,
+        "cdk.out/": true,
+        "**/node_modules/": true
+    }
+}

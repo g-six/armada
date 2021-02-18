@@ -5,58 +5,13 @@ import {
     Stack,
     StackProps,
 } from '@aws-cdk/core'
-import { HttpApi, HttpMethod } from '@aws-cdk/aws-apigatewayv2'
+import { HttpApi } from '@aws-cdk/aws-apigatewayv2'
 import { LambdaProxyIntegration } from '@aws-cdk/aws-apigatewayv2-integrations'
 import * as dynamodb from '@aws-cdk/aws-dynamodb'
 import * as lambda from '@aws-cdk/aws-lambda'
 
-interface ILambdaFn {
-    name: string
-    code: string
-    path: string
-    method: HttpMethod
-}
-interface ILambda {
-    name: string
-    functions: ILambdaFn[]
-}
-const lambdas: ILambda[] = [
-    {
-        name: 'users',
-        functions: [
-            {
-                name: 'createOneUserFn',
-                code: 'create-one',
-                path: '/user',
-                method: HttpMethod.POST,
-            },
-            {
-                name: 'getOneUserFn',
-                code: 'get-one',
-                path: '/user/{id}',
-                method: HttpMethod.GET,
-            },
-            {
-                name: 'getAllUsersFn',
-                code: 'get-all',
-                path: '/users',
-                method: HttpMethod.GET,
-            },
-            {
-                name: 'updateOneUserFn',
-                code: 'update-one',
-                path: '/user/{id}',
-                method: HttpMethod.PATCH,
-            },
-            {
-                name: 'deleteOneUserFn',
-                code: 'delete-one',
-                path: '/user/{id}',
-                method: HttpMethod.DELETE,
-            },
-        ],
-    },
-]
+import { ILambda, HttpMethod } from './types'
+import { lambdas } from './resources'
 
 export class ArmadaDynamoStack extends Stack {
     public readonly url_output: CfnOutput
@@ -141,7 +96,6 @@ export class ArmadaDynamoStack extends Stack {
 
         // Build API Gateway routes for our defined resources
         lambdas.forEach((resource: ILambda) => {
-            // lambdas[{ name, functions: [{ name, code, path, method }]}]
             const { functions, name: resource_name } = resource
 
             functions.forEach(({ name: func_name, code, path, method }) => {
@@ -170,43 +124,3 @@ export class ArmadaDynamoStack extends Stack {
         return this.http_api
     }
 }
-
-// export function addCorsOptions(apiResource: apigateway.IResource) {
-//     apiResource.addMethod(
-//         'OPTIONS',
-//         new apigateway.MockIntegration({
-//             integrationResponses: [
-//                 {
-//                     statusCode: '200',
-//                     responseParameters: {
-//                         'method.response.header.Access-Control-Allow-Headers':
-//                             "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
-//                         'method.response.header.Access-Control-Allow-Origin':
-//                             "'*'",
-//                         'method.response.header.Access-Control-Allow-Credentials':
-//                             "'false'",
-//                         'method.response.header.Access-Control-Allow-Methods':
-//                             "'OPTIONS,GET,PUT,POST,DELETE'",
-//                     },
-//                 },
-//             ],
-//             passthroughBehavior: apigateway.PassthroughBehavior.NEVER,
-//             requestTemplates: {
-//                 'application/json': '{"statusCode": 200}',
-//             },
-//         }),
-//         {
-//             methodResponses: [
-//                 {
-//                     statusCode: '200',
-//                     responseParameters: {
-//                         'method.response.header.Access-Control-Allow-Headers': true,
-//                         'method.response.header.Access-Control-Allow-Methods': true,
-//                         'method.response.header.Access-Control-Allow-Credentials': true,
-//                         'method.response.header.Access-Control-Allow-Origin': true,
-//                     },
-//                 },
-//             ],
-//         }
-//     )
-// }
