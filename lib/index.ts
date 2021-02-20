@@ -9,9 +9,14 @@ import { HttpApi } from '@aws-cdk/aws-apigatewayv2'
 import { LambdaProxyIntegration } from '@aws-cdk/aws-apigatewayv2-integrations'
 import * as dynamodb from '@aws-cdk/aws-dynamodb'
 import * as lambda from '@aws-cdk/aws-lambda'
+import { readFileSync } from 'fs'
 
 import { ILambda, HttpMethod } from './types'
 import { lambdas } from './resources'
+const CRYPTO_KEY = readFileSync(__dirname + '/../.keyfile', {
+    encoding: 'utf8',
+    flag: 'r',
+})
 
 export class ArmadaDynamoStack extends Stack {
     public readonly url_output: CfnOutput
@@ -109,6 +114,7 @@ export class ArmadaDynamoStack extends Stack {
                         TABLE_NAME: this.db.tableName,
                         PRIMARY_KEY: 'doc_type',
                         SECONDARY_KEY: 'doc_key',
+                        CRYPTO_KEY,
                     },
                 })
                 this.db.grantReadWriteData(fn)
