@@ -11,8 +11,7 @@ const RESERVED_RESPONSE = `Error: You're using AWS reserved keywords as attribut
     DYNAMODB_EXECUTION_ERROR = `Error: Execution update, caused a Dynamodb error, please take a look at your CloudWatch Logs.`,
     INVALID_REQUEST_ERROR =
         'invalid request, you are missing the parameter body',
-    DUPLICATE_ERROR =
-        'E-mail address already taken'
+    DUPLICATE_ERROR = 'E-mail address already taken'
 
 function transformMessage(message: string) {
     return JSON.stringify({ message }, null, 3)

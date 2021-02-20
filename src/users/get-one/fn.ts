@@ -28,7 +28,7 @@ export const handler = async (event: any = {}): Promise<any> => {
     if (!doc_id) {
         return {
             statusCode: 400,
-            body: `Error: You are missing the path parameter id`,
+            body: 'Error: You are missing the path parameter id',
         }
     }
 

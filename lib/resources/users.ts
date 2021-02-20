@@ -29,5 +29,5 @@ lambdas.push({
     code: 'delete-one',
     path: '/user/{id}',
     method: HttpMethod.DELETE,
-});
+})
 export default lambdas
