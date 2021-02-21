@@ -1,6 +1,9 @@
+import { APIGatewayProxyEvent, APIGatewayProxyResultV2 } from 'aws-lambda'
 import { DynamoDB } from 'aws-sdk'
 import { UpdateItemOutput } from 'aws-sdk/clients/dynamodb'
 import { PromiseResult } from 'aws-sdk/lib/request'
+import authorize from './auth'
+import { transformDoc, transformError, transformMessage } from './transformers'
 const db = new DynamoDB.DocumentClient()
 const TABLE_NAME = process.env.TABLE_NAME || ''
 
@@ -13,16 +16,18 @@ const RESERVED_RESPONSE = `Error: You're using AWS reserved keywords as attribut
     INVALID_REQUEST_ERROR =
         'invalid request, you are missing the parameter body'
 
-function transformMessage(message: string) {
-    return JSON.stringify({ message }, null, 3)
-}
+export const handler = async (
+    event: APIGatewayProxyEvent
+): Promise<APIGatewayProxyResultV2> => {
+    const auth = authorize(event)
+    if (auth.error) {
+        return {
+            statusCode: 403,
+            body: transformError(auth),
+        }
+    }
 
-function transformDoc(doc: Record<string, unknown>) {
-    return JSON.stringify({ doc }, null, 3)
-}
-
-export const handler = async (event: any = {}): Promise<any> => {
-    if (!event.body) {
+    if (!event || !event.pathParameters || !event.body) {
         return {
             statusCode: 400,
             body: transformMessage(INVALID_REQUEST_ERROR),

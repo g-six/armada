@@ -1,16 +1,10 @@
 import { APIGatewayProxyEvent } from 'aws-lambda'
 import authorize from './auth'
+import { transformDoc, transformError, transformMessage } from './transformer'
 
 const INVALID_REQUEST_NO_ARGUMENTS_ERROR =
         'invalid request, no arguments provided',
     TOKEN_EXPIRED = 'Your session has expired, please login again'
-
-function transformDoc(doc: string) {
-    return JSON.stringify({ doc }, null, 3)
-}
-function transformMessage(message: string) {
-    return JSON.stringify({ message }, null, 3)
-}
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<any> => {
     if (!event.headers || !event.headers.authorization) {
@@ -42,6 +36,6 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<any> => {
         }
     } catch (error) {
         console.error(error)
-        return { statusCode: 500, body: transformMessage(error.message) }
+        return { statusCode: 500, body: transformError(error) }
     }
 }

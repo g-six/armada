@@ -14,7 +14,6 @@
   "dependencies": {
     "aws-lambda": "^1.0.6",
     "aws-sdk": "^2.846.0",
-    "bcryptjs": "^2.4.3",
     "node-rsa": "^1.1.1"
   }
 }

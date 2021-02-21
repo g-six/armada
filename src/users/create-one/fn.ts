@@ -3,6 +3,12 @@ import { genSaltSync, hashSync } from 'bcryptjs'
 import { DynamoDB } from 'aws-sdk'
 import { generate } from 'shortid'
 import authorize from './auth'
+import {
+    transformDoc,
+    transformError,
+    transformErrors,
+    transformMessage,
+} from './transformers'
 
 const db = new DynamoDB.DocumentClient()
 
@@ -12,38 +18,7 @@ const RESERVED_RESPONSE = `Error: You're using AWS reserved keywords as attribut
     DYNAMODB_EXECUTION_ERROR = `Error: Execution update, caused a Dynamodb error, please take a look at your CloudWatch Logs.`,
     INVALID_REQUEST_ERROR =
         'invalid request, you are missing the parameter body',
-    DUPLICATE_ERROR = 'E-mail address already taken',
-    TOKEN_EXPIRED = 'Your session has expired, please login again'
-
-function transformMessage(message: string) {
-    return JSON.stringify({ message }, null, 3)
-}
-
-function transformDoc(row: Record<string, unknown>) {
-    const { title, title_attr, doc_key, uniq_attr, uniq_id } = row
-    const [last_name, first_name] = (title as string).split(', ')
-    return JSON.stringify(
-        {
-            doc: {
-                first_name,
-                last_name,
-                id: (doc_key as string).split('#')[1],
-                [(uniq_attr as string).toLowerCase()]: uniq_id,
-                [(title_attr as string).toLowerCase()]: title,
-            },
-        },
-        null,
-        3
-    )
-}
-
-function transformError(errors: Array<string>, message: string) {
-    return JSON.stringify({ errors, message }, null, 3)
-}
-
-function transformItem(item: Record<string, unknown>) {
-    return JSON.stringify(item, null, 3)
-}
+    DUPLICATE_ERROR = 'E-mail address already taken'
 
 export const handler = async (
     event: APIGatewayProxyEvent
@@ -56,35 +31,11 @@ export const handler = async (
         }
     }
 
-    if (!event.headers || !event.headers.authorization) {
-        message = 'Please login'
+    const auth = authorize(event)
+    if (auth.error) {
         return {
             statusCode: 403,
-            body: transformMessage(message),
-        }
-    }
-
-    const [, token] = event.headers.authorization.split(' ', 2)
-
-    if (!token) {
-        message = 'Please login'
-        return {
-            statusCode: 403,
-            body: transformMessage(message),
-        }
-    }
-
-    const auth = authorize(token)
-    if (!auth || !auth.expires) {
-        return {
-            statusCode: 403,
-            body: transformMessage('Please login'),
-        }
-    }
-    if (new Date() >= new Date(auth.expires)) {
-        return {
-            statusCode: 403,
-            body: transformMessage(TOKEN_EXPIRED),
+            body: transformError(auth),
         }
     }
 
@@ -100,7 +51,7 @@ export const handler = async (
     if (!password) errors.push('password')
 
     if (errors.length > 0) {
-        return { statusCode: 400, body: transformError(errors, message) }
+        return { statusCode: 400, body: transformErrors(errors, message) }
     }
 
     const query_input: DynamoDB.DocumentClient.QueryInput = {
@@ -119,7 +70,7 @@ export const handler = async (
     }
 
     if (errors.length > 0) {
-        return { statusCode: 400, body: transformError(errors, message) }
+        return { statusCode: 400, body: transformErrors(errors, message) }
     }
 
     const now = Date.now()

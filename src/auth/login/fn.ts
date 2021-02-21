@@ -2,7 +2,7 @@ import { DynamoDB } from 'aws-sdk'
 import { QueryOutput } from 'aws-sdk/clients/dynamodb'
 import { PromiseResult } from 'aws-sdk/lib/request'
 import { compareSync } from 'bcryptjs'
-import * as Rsa from 'node-rsa'
+import { transformDoc } from './transformers'
 
 const db = new DynamoDB.DocumentClient()
 const TABLE_NAME = process.env.TABLE_NAME || ''
@@ -16,26 +16,6 @@ const RESERVED_RESPONSE = `Error: You're using AWS reserved keywords as attribut
 
 function transformMessage(message: string) {
     return JSON.stringify({ message }, null, 3)
-}
-
-function transformDoc(doc: Record<string, unknown>) {
-    const full_name = doc.title as string
-    const [last_name, first_name] = full_name.split(', ')
-
-    return JSON.stringify(
-        {
-            doc: {
-                id: (doc.doc_key as string).split('#')[1],
-                email: doc.uniq_id,
-                full_name,
-                first_name,
-                last_name,
-                token: getToken(doc),
-            },
-        },
-        null,
-        3
-    )
 }
 
 export const handler = async (event: any = {}): Promise<any> => {
@@ -78,7 +58,10 @@ export const handler = async (event: any = {}): Promise<any> => {
             }
         }
 
-        const { hashword } = results.Items[0].info as unknown as Record<string, unknown>
+        const { hashword } = (results.Items[0].info as unknown) as Record<
+            string,
+            unknown
+        >
 
         if (!item.password || !compareSync(item.password, hashword as string)) {
             return {
@@ -100,24 +83,4 @@ export const handler = async (event: any = {}): Promise<any> => {
                 : RESERVED_RESPONSE
         return { statusCode: 500, body: transformMessage(message) }
     }
-}
-
-const key = new Rsa(
-    ((process.env.CRYPTO_KEY || { b: 512 }) as unknown) as Rsa.KeyBits
-)
-
-export const getToken = (doc: Record<string, unknown>) => {
-    const [last_name, first_name] = (doc.title as string).split(', ')
-    // Expires in 2 weeks
-    const two_weeks = 1000 * 60 * 60 * 24 * 7 * 2
-    return key.encrypt(
-        JSON.stringify({
-            id: (doc.doc_key as string).split('#')[1],
-            email: doc.uniq_id,
-            last_name,
-            first_name,
-            expires: Date.now() + two_weeks,
-        }),
-        'base64'
-    )
 }
