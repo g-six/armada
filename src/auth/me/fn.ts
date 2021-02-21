@@ -1,9 +1,5 @@
 import { APIGatewayProxyEvent } from 'aws-lambda'
-import * as Rsa from 'node-rsa'
-
-const key = new Rsa(
-    ((process.env.CRYPTO_KEY || { b: 512 }) as unknown) as Rsa.KeyBits
-)
+import authorize from './auth'
 
 const INVALID_REQUEST_NO_ARGUMENTS_ERROR =
         'invalid request, no arguments provided',
@@ -16,11 +12,6 @@ function transformMessage(message: string) {
     return JSON.stringify({ message }, null, 3)
 }
 
-function transformToken(token: string) {
-    const message = key.decrypt(token, 'utf8')
-    return message ? JSON.parse(message) : ''
-}
-
 export const handler = async (event: APIGatewayProxyEvent): Promise<any> => {
     if (!event.headers || !event.headers.authorization) {
         return {
@@ -30,7 +21,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<any> => {
     }
 
     const [, token] = event.headers.authorization.split(' ', 2)
-    const info = transformToken(token)
+    const info = authorize(token)
     if (!info || !info.expires) {
         return {
             statusCode: 403,

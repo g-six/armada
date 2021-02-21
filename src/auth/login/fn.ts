@@ -6,9 +6,6 @@ import * as Rsa from 'node-rsa'
 
 const db = new DynamoDB.DocumentClient()
 const TABLE_NAME = process.env.TABLE_NAME || ''
-const key = new Rsa(
-    ((process.env.CRYPTO_KEY || { b: 512 }) as unknown) as Rsa.KeyBits
-)
 
 const RESERVED_RESPONSE = `Error: You're using AWS reserved keywords as attributes`,
     DYNAMODB_EXECUTION_ERROR = `Error: Execution update, caused a Dynamodb error, please take a look at your CloudWatch Logs.`,
@@ -24,25 +21,16 @@ function transformMessage(message: string) {
 function transformDoc(doc: Record<string, unknown>) {
     const full_name = doc.title as string
     const [last_name, first_name] = full_name.split(', ')
-    const two_weeks = 1000 * 60 * 60 * 24 * 7 * 2
-    const token = key.encrypt(
-        JSON.stringify({
-            email: doc.uniq_id,
-            last_name,
-            first_name,
-            expires: Date.now() + two_weeks,
-        }),
-        'base64'
-    )
+
     return JSON.stringify(
         {
             doc: {
+                id: (doc.doc_key as string).split('#')[1],
                 email: doc.uniq_id,
                 full_name,
                 first_name,
                 last_name,
-                token,
-                id: (doc.doc_key as string).split('#')[1],
+                token: getToken(doc),
             },
         },
         null,
@@ -112,4 +100,24 @@ export const handler = async (event: any = {}): Promise<any> => {
                 : RESERVED_RESPONSE
         return { statusCode: 500, body: transformMessage(message) }
     }
+}
+
+const key = new Rsa(
+    ((process.env.CRYPTO_KEY || { b: 512 }) as unknown) as Rsa.KeyBits
+)
+
+export const getToken = (doc: Record<string, unknown>) => {
+    const [last_name, first_name] = (doc.title as string).split(', ')
+    // Expires in 2 weeks
+    const two_weeks = 1000 * 60 * 60 * 24 * 7 * 2
+    return key.encrypt(
+        JSON.stringify({
+            id: (doc.doc_key as string).split('#')[1],
+            email: doc.uniq_id,
+            last_name,
+            first_name,
+            expires: Date.now() + two_weeks,
+        }),
+        'base64'
+    )
 }
