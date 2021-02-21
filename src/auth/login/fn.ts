@@ -103,11 +103,11 @@ export const handler = async (event: any = {}): Promise<any> => {
             statusCode: 200,
             body: transformDoc(results.Items[0]),
         }
-    } catch (dbError) {
-        console.error(dbError)
+    } catch (error) {
+        console.error(error)
         const message =
-            dbError.code === 'ValidationException' &&
-            dbError.message.includes('reserved keyword')
+            error.code === 'ValidationException' &&
+            error.message.includes('reserved keyword')
                 ? DYNAMODB_EXECUTION_ERROR
                 : RESERVED_RESPONSE
         return { statusCode: 500, body: transformMessage(message) }
