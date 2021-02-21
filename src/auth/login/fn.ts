@@ -78,9 +78,9 @@ export const handler = async (event: any = {}): Promise<any> => {
             }
         }
 
-        const { hashword } = JSON.parse(results.Items[0].info as string)
+        const { hashword } = results.Items[0].info as unknown as Record<string, unknown>
 
-        if (!item.password || !compareSync(item.password, hashword)) {
+        if (!item.password || !compareSync(item.password, hashword as string)) {
             return {
                 statusCode: 403,
                 body: '{"message": "Invalid login information"}',

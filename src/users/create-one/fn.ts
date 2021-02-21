@@ -2,6 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import { genSaltSync, hashSync } from 'bcryptjs'
 import { DynamoDB } from 'aws-sdk'
 import { generate } from 'shortid'
+import authorize from './auth'
 
 const db = new DynamoDB.DocumentClient()
 
@@ -11,7 +12,8 @@ const RESERVED_RESPONSE = `Error: You're using AWS reserved keywords as attribut
     DYNAMODB_EXECUTION_ERROR = `Error: Execution update, caused a Dynamodb error, please take a look at your CloudWatch Logs.`,
     INVALID_REQUEST_ERROR =
         'invalid request, you are missing the parameter body',
-    DUPLICATE_ERROR = 'E-mail address already taken'
+    DUPLICATE_ERROR = 'E-mail address already taken',
+    TOKEN_EXPIRED = 'Your session has expired, please login again'
 
 function transformMessage(message: string) {
     return JSON.stringify({ message }, null, 3)
@@ -53,6 +55,39 @@ export const handler = async (
             body: transformMessage(message),
         }
     }
+
+    if (!event.headers || !event.headers.authorization) {
+        message = 'Please login'
+        return {
+            statusCode: 403,
+            body: transformMessage(message),
+        }
+    }
+
+    const [, token] = event.headers.authorization.split(' ', 2)
+
+    if (!token) {
+        message = 'Please login'
+        return {
+            statusCode: 403,
+            body: transformMessage(message),
+        }
+    }
+
+    const auth = authorize(token)
+    if (!auth || !auth.expires) {
+        return {
+            statusCode: 403,
+            body: transformMessage('Please login'),
+        }
+    }
+    if (new Date() >= new Date(auth.expires)) {
+        return {
+            statusCode: 403,
+            body: transformMessage(TOKEN_EXPIRED),
+        }
+    }
+
     const item =
         typeof event.body == 'object' ? event.body : JSON.parse(event.body)
     const record: Record<string, unknown> = {}
@@ -63,6 +98,10 @@ export const handler = async (
     if (!last_name) errors.push('last_name')
     if (!email) errors.push('email')
     if (!password) errors.push('password')
+
+    if (errors.length > 0) {
+        return { statusCode: 400, body: transformError(errors, message) }
+    }
 
     const query_input: DynamoDB.DocumentClient.QueryInput = {
         TableName: TABLE_NAME,
@@ -94,13 +133,12 @@ export const handler = async (
     record.uniq_attr = 'EMAIL'
     record.created_at = now
     record.updated_at = now
-    record.updated_by = permanent_id
+    record.created_by = auth.id
+    record.updated_by = auth.id
 
-    const info: Record<string, unknown> = {
+    record.info = {
         hashword: hashSync(password, genSaltSync(10)),
     }
-
-    record.info = transformItem(info)
 
     const params = {
         TableName: TABLE_NAME,

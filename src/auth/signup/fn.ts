@@ -99,12 +99,9 @@ export const handler = async (
         record.created_at = now
         record.updated_at = now
         record.updated_by = permanent_id
-
-        const info: Record<string, unknown> = {
+        record.info = {
             hashword: hashSync(password, genSaltSync(10)),
         }
-
-        record.info = transformItem(info)
 
         const params = {
             TableName: TABLE_NAME,
