@@ -8,10 +8,15 @@ export const transformDoc = (doc: Record<string, unknown>) => {
     )
 }
 
-export const transformError = (error: Error) => JSON.stringify({
-    error: error.message,
-    stack: error.stack,
-}, null, 3)
+export const transformError = (error: Error) =>
+    JSON.stringify(
+        {
+            error: error.message,
+            stack: error.stack,
+        },
+        null,
+        3
+    )
 
 export const transformMessage = (message: string) =>
     JSON.stringify({ message }, null, 3)

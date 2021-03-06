@@ -1,18 +1,17 @@
-import getToken from './auth'
-
 export const transformDoc = (doc: Record<string, unknown>) => {
     const full_name = doc.title as string
+    const { token, uniq_id: email } = doc
     const [last_name, first_name] = full_name.split(', ')
 
     return JSON.stringify(
         {
             doc: {
                 id: (doc.doc_key as string).split('#')[1],
-                email: doc.uniq_id,
+                email,
                 full_name,
                 first_name,
                 last_name,
-                token: getToken(doc),
+                token,
             },
         },
         null,

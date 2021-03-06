@@ -96,6 +96,6 @@ export const handler = async (
             dbError.message.includes('reserved keyword')
                 ? DYNAMODB_EXECUTION_ERROR
                 : RESERVED_RESPONSE
-        return { statusCode: 500, body: transformMessage(message) }
+        return { statusCode: 400, body: transformMessage(message) }
     }
 }

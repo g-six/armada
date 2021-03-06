@@ -1,11 +1,7 @@
-import { DynamoDB } from 'aws-sdk'
-import { QueryOutput } from 'aws-sdk/clients/dynamodb'
-import { PromiseResult } from 'aws-sdk/lib/request'
 import { compareSync } from 'bcryptjs'
+import getToken from './auth'
+import { query, updateToken } from './database'
 import { transformDoc } from './transformers'
-
-const db = new DynamoDB.DocumentClient()
-const TABLE_NAME = process.env.TABLE_NAME || ''
 
 const RESERVED_RESPONSE = `Error: You're using AWS reserved keywords as attributes`,
     DYNAMODB_EXECUTION_ERROR = `Error: Execution update, caused a Dynamodb error, please take a look at your CloudWatch Logs.`,
@@ -26,53 +22,49 @@ export const handler = async (event: any = {}): Promise<any> => {
         }
     }
 
-    const item =
+    const { email, password } =
         typeof event.body == 'object' ? event.body : JSON.parse(event.body)
 
-    if (!item.email) {
+    if (!email || !password) {
         return {
             statusCode: 400,
             body: transformMessage(INVALID_REQUEST_NO_ARGUMENTS_ERROR),
         }
     }
 
-    const query_params: DynamoDB.QueryInput = {
-        TableName: TABLE_NAME,
-        IndexName: 'gsi3',
-        KeyConditionExpression: 'doc_type = :doc_type and uniq_id = :uniq_id',
-        ExpressionAttributeValues: {
-            ':uniq_id': item.email,
-            ':doc_type': 'USER' as DynamoDB.AttributeValue,
-        },
-    }
-
     try {
-        const results: PromiseResult<QueryOutput, unknown> = await db
-            .query(query_params)
-            .promise()
-
-        if (!results.Items || results.Items.length == 0) {
+        const results = await query(email)
+        if (!results) {
             return {
                 statusCode: 403,
                 body: '{"message": "Invalid login information"}',
             }
         }
 
-        const { hashword } = (results.Items[0].info as unknown) as Record<
+        const { hashword } = (results[0].info as unknown) as Record<
             string,
             unknown
         >
 
-        if (!item.password || !compareSync(item.password, hashword as string)) {
+        if (!compareSync(password, hashword as string)) {
             return {
                 statusCode: 403,
                 body: '{"message": "Invalid login information"}',
             }
         }
 
+        const { sk } = results[0]
+
+        const token = getToken(results[0])
+
+        const updated = await updateToken(sk, token)
+        console.log(updated)
         return {
             statusCode: 200,
-            body: transformDoc(results.Items[0]),
+            body: transformDoc({
+                ...results[0],
+                token,
+            }),
         }
     } catch (error) {
         console.error(error)

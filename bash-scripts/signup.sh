@@ -7,6 +7,7 @@ echo '   {
     "user_type": "'"$5"'"
 }'
 echo ""
+echo "Response: "
 curl -X POST $API_DOMAIN/signup -H 'content-type: application/json' \
     -d '{
         "email": "'$1'",
@@ -15,3 +16,4 @@ curl -X POST $API_DOMAIN/signup -H 'content-type: application/json' \
         "last_name": "'"$4"'",
         "user_type": "'"$5"'"
     }'
+echo ""
