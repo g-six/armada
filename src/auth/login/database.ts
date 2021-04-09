@@ -24,15 +24,16 @@ export const updateToken = async (
     id: DynamoDB.AttributeValue,
     token: string
 ) => {
+    console.log('doc_key', id)
     const params: any = {
         TableName: TABLE_NAME,
         Key: {
             doc_type: 'USER',
-            doc_key: `u#${id}`,
+            doc_key: id,
         },
-        UpdateExpression: 'set info.token = :token',
+        UpdateExpression: 'set info.token = :tkn',
         ExpressionAttributeValues: {
-            ':token': token,
+            ':tkn': token,
         },
         ReturnValues: 'UPDATED_NEW',
     }

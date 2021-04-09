@@ -54,11 +54,13 @@ export const handler = async (event: any = {}): Promise<any> => {
         }
 
         const { sk } = results[0]
+        console.log('Results: ')
+        console.log(results)
 
         const token = getToken(results[0])
 
         const updated = await updateToken(sk, token)
-        console.log(updated)
+
         return {
             statusCode: 200,
             body: transformDoc({
@@ -72,7 +74,7 @@ export const handler = async (event: any = {}): Promise<any> => {
             error.code === 'ValidationException' &&
             error.message.includes('reserved keyword')
                 ? DYNAMODB_EXECUTION_ERROR
-                : RESERVED_RESPONSE
+                : error.message
         return { statusCode: 500, body: transformMessage(message) }
     }
 }
