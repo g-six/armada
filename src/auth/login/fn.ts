@@ -3,8 +3,7 @@ import getToken from './auth'
 import { query, updateToken } from './database'
 import { transformDoc } from './transformers'
 
-const RESERVED_RESPONSE = `Error: You're using AWS reserved keywords as attributes`,
-    DYNAMODB_EXECUTION_ERROR = `Error: Execution update, caused a Dynamodb error, please take a look at your CloudWatch Logs.`,
+const DYNAMODB_EXECUTION_ERROR = `Error: Execution update, caused a Dynamodb error, please take a look at your CloudWatch Logs.`,
     INVALID_REQUEST_NO_ARGUMENTS_ERROR =
         'invalid request, no arguments provided',
     INVALID_REQUEST_ERROR =
@@ -53,14 +52,11 @@ export const handler = async (event: any = {}): Promise<any> => {
             }
         }
 
-        const { sk } = results[0]
-        console.log('Results: ')
-        console.log(results)
+        const { doc_key } = results[0]
 
         const token = getToken(results[0])
 
-        const updated = await updateToken(sk, token)
-
+        const updated = await updateToken(doc_key, token)
         return {
             statusCode: 200,
             body: transformDoc({
@@ -69,6 +65,7 @@ export const handler = async (event: any = {}): Promise<any> => {
             }),
         }
     } catch (error) {
+        console.error(error.stack)
         console.error(error)
         const message =
             error.code === 'ValidationException' &&

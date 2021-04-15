@@ -1,3 +1,4 @@
+echo 'Request API: POST '$API_DOMAIN'/signup'
 echo 'Request body:'
 echo '   {
     "email": "'$1'",
@@ -17,3 +18,4 @@ curl -X POST $API_DOMAIN/signup -H 'content-type: application/json' \
         "user_type": "'"$5"'"
     }'
 echo ""
+

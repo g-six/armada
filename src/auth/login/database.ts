@@ -14,6 +14,7 @@ export const query = async (email: DynamoDB.AttributeValue) => {
             ':doc_type': 'USER' as DynamoDB.AttributeValue,
         },
     }
+
     const results: PromiseResult<QueryOutput, unknown> = await db
         .query(query_params)
         .promise()
@@ -24,14 +25,13 @@ export const updateToken = async (
     id: DynamoDB.AttributeValue,
     token: string
 ) => {
-    console.log('doc_key', id)
     const params: any = {
         TableName: TABLE_NAME,
         Key: {
             doc_type: 'USER',
             doc_key: id,
         },
-        UpdateExpression: 'set info.token = :tkn',
+        UpdateExpression: 'set info.jwt = :tkn',
         ExpressionAttributeValues: {
             ':tkn': token,
         },

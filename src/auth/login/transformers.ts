@@ -1,6 +1,7 @@
 export const transformDoc = (doc: Record<string, unknown>) => {
     const full_name = doc.title as string
-    const { token, uniq_id: email } = doc
+    const { uniq_id: email } = doc
+    const { jwt: token } = doc.info as Record<string, unknown>
     const [last_name, first_name] = full_name.split(', ')
 
     return JSON.stringify(
