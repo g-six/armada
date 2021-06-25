@@ -1,0 +1,42 @@
+component: aws-dynamodb
+name: database
+provider:
+  useDotEnv: true
+
+inputs:
+  name: ${app}-${stage}-${name}
+  region: ${env:region}
+  # Don't delete the Database Table if "serverless remove" is run
+  deletionPolicy: retain
+  # Simple, single-table design
+  attributeDefinitions:
+    - AttributeName: hk
+      AttributeType: S
+    - AttributeName: sk
+      AttributeType: S
+    - AttributeName: hk2
+      AttributeType: S
+    - AttributeName: sk2
+      AttributeType: S
+  keySchema:
+    - AttributeName: hk
+      KeyType: HASH
+    - AttributeName: sk
+      KeyType: RANGE
+  globalSecondaryIndexes:
+    - IndexName: gsi1
+      KeySchema:
+        - AttributeName: hk2
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      Projection:
+        ProjectionType: ALL
+    - IndexName: gsi2
+      KeySchema:
+        - AttributeName: hk
+          KeyType: HASH
+        - AttributeName: sk2
+          KeyType: RANGE
+      Projection:
+        ProjectionType: ALL

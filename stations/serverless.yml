@@ -1,0 +1,18 @@
+component: express
+name: stations
+provider:
+  runtime: nodejs14.x
+inputs:
+  src: 
+    src: ./src
+    hook: npm run build
+    dist: ./build
+  region: ${env:region}
+  roleName: ${output:permissions.name}
+  env:
+    db: ${output:database.name}
+    dbIndex1: ${output:database.indexes.gsi1.name}
+    dbIndex2: ${output:database.indexes.gsi2.name}
+    region: ${env:region}
+    token: ${env:token}
+    MANDRILL_API_KEY: ${env:MANDRILL_API_KEY}
