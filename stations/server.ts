@@ -1,5 +1,4 @@
 const app = require('./src/app')
-// import { app } from './src/app'
 
 const server = app.listen(process.env.PORT, () => {
     console.log(`NODE_ENV ${process.env.NODE_ENV}`)
