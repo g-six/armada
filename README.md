@@ -1,25 +1,30 @@
-## Serverless RESTful API
+# Serverless / Express RESTful API
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
-### Requirements
+## Requirements
 i. Installed `docker-compose`
 ii. Installed NodeJS v14
 iii. Installed `aws-cli`
 iv. Installed `serverless` npm package
 
-### Installation
+## Installation
 To run the microservices locally, the following steps should be undertaken on your local machine.
 Create a dot env file (`.env`) at the root of the directory with the following contents
+
+**1. Environment**
 ```bash
 region=ap-northeast-1
 profile=idearobin
 aws_access_key_id=IDEAROBINDUMMYKEY
 aws_secret_access_key=JUSTASAMPLEKEY
-token=somerandomtoken
+token=some-token-to-be-used-in-auth-flow
 MANDRILL_API_KEY=ANYFORNOWSINCEYOUWONTBENEEDINGTHISANYWAY
 ```
 
-Go to the `database` directory
+**2. Database**
+The default database for this framework is AWS DynamoDB but your can use a different tech stack based on your needs (I would recommend Postgres if your are for relational database systems).
+
+Go to the `database` directory to set everything up and create your database via Docker.
 ```bash
 cd database
 ```
@@ -29,11 +34,15 @@ Run the docker container for the offline dynamodb.
 docker-compose up -d
 ```
 
+**3. ExpressJS Services**
 Go to any microservices directory (for example: `auth` directory) and run the dev server
 ```bash
 cd ../auth
-npm run dev
+
+PORT=<an open port for node to listen to> npm run dev
 ```
+
+**4. Example APIs**
 
 #### Signup API (to create user)
 Sample request
