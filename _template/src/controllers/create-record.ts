@@ -7,7 +7,7 @@ const create = async (req: Request, res: Response) => {
         const { name } = req.body
         const user_id = (req.user as User).id
         const doc = await Model.createRecord(name, user_id)
-        if (!doc) throw new Error('Unable to create user')
+        if (!doc) throw new Error('Unable to create')
 
         return res.status(200).json({
             message: 'Record created.',
