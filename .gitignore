@@ -11,3 +11,4 @@ src/**.js
 cdk.out
 .aliases
 
+*package-lock.json
