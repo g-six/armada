@@ -5,7 +5,7 @@ let dbopts
 
 if (process.env.NODE_ENV == 'local') {
     dbopts = {
-        endpoint: 'http://localhost:8000',
+        endpoint: process.env.LOCAL_DYNAMODB || 'http://localhost:8000',
         region: process.env.region,
     }
 } else {

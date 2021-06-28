@@ -13,6 +13,7 @@
         "shortid": "^2.2.16"
     },
     "devDependencies": {
+        "@types/aws-sdk": "^2.7.0",
         "@types/bcryptjs": "^2.4.2",
         "@types/express": "^4.17.12",
         "@types/jsonwebtoken": "^8.5.2",
@@ -22,6 +23,7 @@
         "@types/shortid": "^0.0.29",
         "@typescript-eslint/eslint-plugin": "^4.28.0",
         "@typescript-eslint/parser": "^4.28.0",
+        "aws-sdk": "^2.935.0",
         "eslint": "^7.29.0",
         "eslint-config-prettier": "^8.3.0",
         "eslint-plugin-prettier": "^3.4.0",
