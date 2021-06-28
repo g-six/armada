@@ -1,4 +1,6 @@
 *.js
+*.config
+*.npm
 .keyfile
 !jest.config.js
 *.d.ts

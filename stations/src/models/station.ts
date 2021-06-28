@@ -1,3 +1,4 @@
+import { DynamoDB } from 'aws-sdk'
 import { generate } from 'shortid'
 import {
     create,
@@ -25,7 +26,7 @@ type StationFilters = {
 }
 
 const retrieveStations = async (filters?: StationFilters) => {
-    const docs = await retrieve(
+    const docs: DynamoDB.DocumentClient.ItemList = await retrieve(
         'hk = :hk and begins_with(sk, :sk)',
         {
             ':hk': 'station',
