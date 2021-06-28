@@ -44,5 +44,3 @@ networks:
     default:
         external:
             name: local-dynamodb
-volumes:
-    dynamodata: {}

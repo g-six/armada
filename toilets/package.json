@@ -1,0 +1,55 @@
+{
+    "name": "toilets-api",
+    "version": "0.0.1",
+    "description": "",
+    "private": true,
+    "main": "app.js",
+    "dependencies": {
+        "@mailchimp/mailchimp_transactional": "^1.0.27",
+        "bcryptjs": "^2.4.3",
+        "express": "^4.17.1",
+        "passport": "^0.4.1",
+        "passport-jwt": "^4.0.0",
+        "shortid": "^2.2.16"
+    },
+    "devDependencies": {
+        "@types/aws-sdk": "^2.7.0",
+        "@types/bcryptjs": "^2.4.2",
+        "@types/express": "^4.17.12",
+        "@types/jsonwebtoken": "^8.5.2",
+        "@types/node": "^15.12.4",
+        "@types/passport": "^1.0.6",
+        "@types/passport-jwt": "^3.0.5",
+        "@types/shortid": "^0.0.29",
+        "aws-sdk": "^2.935.0",
+        "nodemon": "^2.0.7",
+        "rimraf": "^3.0.2",
+        "serverless-hooks": "^1.0.0",
+        "serverless-plugin-typescript": "^1.1.5",
+        "ts-loader": "^9.2.3",
+        "ts-node": "^10.0.0",
+        "typescript": "^4.3.4"
+    },
+    "compilerOptions": {
+        "typeRoots": [
+            "@types",
+            "node_modules/@types"
+        ]
+    },
+    "scripts": {
+        "dev": "nodemon --config nodemon.json server.ts",
+        "dev:debug": "nodemon --config nodemon.json --inspect-brk src/index.ts",
+        "build": "rimraf ./build && tsc",
+        "postbuild": "cp package*.json build/ && npm i --only=prod --prefix=build",
+        "format": "prettier --config .prettierrc 'src/**/*.ts' --write",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "npm run format && npm run lint",
+            "prepare-commit-msg": "exec < /dev/tty && giz cz --hook || true"
+        }
+    },
+    "author": "g-six",
+    "license": "ISC"
+}

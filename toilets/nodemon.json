@@ -1,0 +1,19 @@
+{
+  "restartable": "rs",
+  "ignore": [".git", "node_modules/", "build/", "coverage/"],
+  "watch": ["src/"],
+  "execMap": {
+    "ts": "node -r ts-node/register"
+  },
+  "env": {
+    "NODE_ENV": "local",
+    "AWS_ACCESS_KEY_ID": "local",
+    "AWS_SECRET_ACCESS_KEY": "local",
+    "region": "ap-northeast-1",
+    "token": "abc12345",
+    "db": "vacan-dev-database",
+    "dbIndex1": "gsi1",
+    "dbIndex2": "gsi2"
+  },
+  "ext": "js,json,ts"
+}
