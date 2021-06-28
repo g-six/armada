@@ -5,14 +5,14 @@ services:
         container_name: auth-api
         image: node:14
         volumes:
-        - "./auth:/src"
+            - "./auth:/src"
         working_dir: '/src'
         environment:
             LOCAL_DYNAMODB: 'http://local-dynamodb:8000'
             NODE_ENV: local
             PORT: 8001
         ports:
-        - "8301:8001"
+            - "8301:8001"
         command: bash -c "npm install && npm run dev"
 
     stations:
@@ -26,7 +26,21 @@ services:
             NODE_ENV: local
             PORT: 8002
         ports:
-        - "8302:8002"
+            - "8302:8002"
+        command: bash -c "npm install && npm run dev"
+
+    toilets:
+        container_name: toilets-api
+        image: node:14
+        volumes:
+        - "./toilets:/src"
+        working_dir: '/src'
+        environment:
+            LOCAL_DYNAMODB: 'http://local-dynamodb:8000'
+            NODE_ENV: local
+            PORT: 8003
+        ports:
+            - "8303:8003"
         command: bash -c "npm install && npm run dev"
 
     nginx:
