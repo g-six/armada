@@ -1,4 +1,4 @@
-## Toilet Model
+## Toilet Usage Model
 | Name            | Type          | Required |
 | --------------- |:-------------:| --------:|
 | id              | string        |     auto |
@@ -8,3 +8,4 @@
 | usage_count     | number        |     true |
 | created_at      | timestamp     |     auto |
 | updated_at      | timestamp     |     auto |
+
