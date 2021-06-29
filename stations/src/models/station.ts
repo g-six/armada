@@ -39,7 +39,7 @@ const retrieveStations = async (filters?: StationFilters) => {
         if (!doc.delete_at) {
             stations.push({
                 id: doc.sk.split('#')[1],
-                created_by: doc.hk2.split('#')[0],
+                created_by: doc.info.created_by,
                 name: doc.info.name,
                 created_at: doc.created_at,
                 updated_at: doc.updated_at,
@@ -62,11 +62,11 @@ const createStation = async (
     }
 
     const id: string = generate()
-    const info = { name }
+    const info = { name, created_by }
     const record: Record = {
         hk: 'station',
         sk: `station#${id}`,
-        hk2: `${created_by}#${id}`,
+        hk2: `user#${created_by}`,
         sk2: name,
         info,
     }
@@ -170,8 +170,8 @@ const normalize = (doc: Record): Station | void => {
     if (doc) {
         return {
             id: doc.sk.split('#')[1],
-            name: doc.info.name as string,
-            created_by: doc.hk2.split('#')[0],
+            name: doc.sk2,
+            created_by: doc.info.created_by as string,
             created_at: doc.created_at,
             updated_at: doc.updated_at,
         }

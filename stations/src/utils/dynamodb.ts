@@ -135,12 +135,6 @@ const update = async (
     }
 }
 
-// DynamoDB.DocumentClient.BatchWriteItemInput
-type PutRequestItems = {
-    PutRequest: {
-        TableName: string
-    }
-}
 const deleteItemAt = async (
     model: string,
     id: string
