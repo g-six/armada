@@ -11,6 +11,7 @@ import {
 type Station = {
     id: string
     name: string
+    line: string
     created_by?: string
     created_at?: number
     updated_at?: number
@@ -25,6 +26,10 @@ type StationFilters = {
     created_by?: string
 }
 
+export type ErrorList = {
+    errors: string[]
+}
+
 const retrieveStations = async (filters?: StationFilters) => {
     const docs: DynamoDB.DocumentClient.ItemList = await retrieve(
         'hk = :hk and begins_with(sk, :sk)',
@@ -35,15 +40,9 @@ const retrieveStations = async (filters?: StationFilters) => {
     )
 
     const stations: Station[] = []
-    docs.map((doc) => {
+    docs.map((doc: Record) => {
         if (!doc.delete_at) {
-            stations.push({
-                id: doc.sk.split('#')[1],
-                created_by: doc.info.created_by,
-                name: doc.info.name,
-                created_at: doc.created_at,
-                updated_at: doc.updated_at,
-            })
+            stations.push(normalize(doc as Record) as Station)
         } else {
             console.log(doc)
         }
@@ -54,9 +53,10 @@ const retrieveStations = async (filters?: StationFilters) => {
 
 const createStation = async (
     name: string,
+    line: string,
     created_by: string
-): Promise<Station> => {
-    const existing = await getByName(name)
+): Promise<Station | { error: string }> => {
+    const existing = await getByName(name, line)
     if (existing) {
         throw new Error(`"${name}" already existing`)
     }
@@ -67,18 +67,15 @@ const createStation = async (
         hk: 'station',
         sk: `station#${id}`,
         hk2: `user#${created_by}`,
-        sk2: name,
+        sk2: `${name}#${line}`,
         info,
     }
     const doc = await create(record)
-    const station = {
-        id,
-        name: doc.sk2,
-        created_by: doc.sk.split('#')[1],
-        created_at: doc.created_at,
-        updated_at: doc.updated_at,
+
+    if (!doc) return {
+        error: 'create_station_failed'
     }
-    return station
+    return normalize(doc) as Station
 }
 
 const updateStation = async (
@@ -126,17 +123,26 @@ const updateStation = async (
 /**
  *
  * @param name
+ * @param line
  * @returns Station document
  */
-const getByName = async (name: string) => {
-    // Validate
+const getByName = async (name: string, line: string) => {
+    const errors: { [key:string]: string }[] = []
     if (!name) {
-        throw new Error('"name" is required')
+        errors.push({
+            name: 'station_name_required',
+        })
+    }
+
+    if (!line) {
+        errors.push({
+            line: 'train_line_required',
+        })
     }
 
     const [doc] = await retrieve(
         'hk = :hk and sk2 = :sk2',
-        { ':hk': 'station', ':sk2': name },
+        { ':hk': 'station', ':sk2': `${name}#${line}` },
         process.env.dbIndex2
     )
 
@@ -168,9 +174,11 @@ const deleteStation = async (id: string) => {
 
 const normalize = (doc: Record): Station | void => {
     if (doc) {
+        const [name, line] = doc.sk2.split('#')
         return {
             id: doc.sk.split('#')[1],
-            name: doc.sk2,
+            name,
+            line,
             created_by: doc.info.created_by as string,
             created_at: doc.created_at,
             updated_at: doc.updated_at,

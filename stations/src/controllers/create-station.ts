@@ -4,10 +4,10 @@ import * as Model from '../models/station'
 
 const create = async (req: Request, res: Response) => {
     try {
-        const { name } = req.body
+        const { name, line } = req.body
         const user_id = (req.user as User).id
-        const doc = await Model.createStation(name, user_id)
-        if (!doc) throw new Error('Unable to create user')
+        const doc = await Model.createStation(name, line, user_id)
+        if (!doc) throw new Error('Unable to create station')
 
         return res.status(200).json({
             message: 'Record created.',

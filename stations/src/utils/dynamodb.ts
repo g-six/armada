@@ -36,6 +36,7 @@ interface Record {
     sk: string
     hk2: string
     sk2: string
+    delete_at?: number
     created_at?: number
     updated_at?: number
     info: {

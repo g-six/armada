@@ -1,6 +1,8 @@
 import * as express from 'express'
 import * as passport from 'passport'
 import * as jwt from 'jsonwebtoken'
+import { readdirSync, readFileSync } from 'fs-extra'
+
 import create from './controllers/create-station'
 import retrieveStations from './controllers/retrieve-stations'
 import update from './controllers/update-station'
@@ -42,6 +44,22 @@ try {
 
 // Enable JSON use
 app.use(express.json())
+
+type LocaleKeyValuePair = {
+    [key: string]: string
+}
+
+const langs = readdirSync(`${__dirname}/locales`)
+const locales: LocaleKeyValuePair = {}
+
+langs.forEach((lang: string) => {
+    locales[lang] = JSON.parse(readFileSync(`${__dirname}/locales/${lang}/translation.json`, { encoding: "utf8", flag: "r" }))
+})
+
+const getLocales = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    res.locals.locales = locales
+    next()
+}
 
 // Initialize Passport and restore authentication state, if any, from the session
 app.use(passport.initialize())
