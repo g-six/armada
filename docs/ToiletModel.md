@@ -11,6 +11,8 @@
 | last_alert      | string        |     true |
 | usage_count     | number        |     true |
 | reset           | string        |     true |
-| cleaning_record | string        |     true |
+| current_job_id  | string        |     true | 
 | created_at      | timestamp     |     auto |
 | updated_at      | timestamp     |     auto |
+
+The model has one active / recent job `current_job_id` (see CleaningJobModel)
