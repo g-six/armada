@@ -107,7 +107,7 @@ const tokenValidationHandler = async (
 
 // Routes
 app.post('/login', getLocales, asyncHandler(login))
-app.post('/signup', asyncHandler(create))
+app.post('/signup', getLocales, asyncHandler(create))
 app.get('/activate', asyncHandler(activate))
 app.get(
     '/me',

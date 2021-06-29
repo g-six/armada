@@ -22,12 +22,13 @@ type User = {
 }
 
 type FieldError = {
-    [key: string]: string
+    field: string
+    message: string
 }
 
 type ErrorMap = {
     error?: string
-    errors?: FieldError
+    errors?: FieldError[]
 }
 
 interface UserRequest extends Request {
@@ -85,7 +86,7 @@ const createUser = async (
     if (!password) {
         throw new Error('PASSWORD_REQUIRED')
     } else if (!validatePassword(password)) {
-        return { errors: { password: 'password_invalid' } }
+        return { errors: [{ field: 'password', message: 'password_invalid' }] }
     }
 
     const user_sort_key: string = generate()

@@ -18,9 +18,18 @@ const create = async (req: Request, res: Response) => {
             password,
             user_type
         )
-        const { errors, error } = (results as UserModel.ErrorMap)
-        if (errors || error) {
-            return res.status(400).json(results)
+        const { errors: errs, error } = (results as UserModel.ErrorMap)
+        if (errs || error) {
+            const errors: { [key: string]: string } = {}
+            if (errors) {
+                errs.forEach(({ field, message }) => {
+                    errors[field] = res.locals.locales.jp[message] as string
+                })
+            }
+            return res.status(400).json({
+                error: error && res.locals.locales.jp[error],
+                errors,
+            })
         }
 
         user = results as UserModel.User

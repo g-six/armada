@@ -1,5 +1,5 @@
 const validatePassword = (key: string): boolean => {
-    return /^.*(?=.{8,20})(?=.*[a-zA-Z])(?=.*\d).*$/.test(key)
+    return /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,20}/.test(key)
 }
 
 export { validatePassword }

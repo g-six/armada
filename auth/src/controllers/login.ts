@@ -2,31 +2,20 @@ import { Request, Response } from 'express'
 import { loginUser } from '../models/user'
 import { validatePassword } from '../utils/password-helper'
 
+type FormFieldErrors = {
+    email?: string
+    password?: string
+}
 const login = async (req: Request, res: Response) => {
     const { email, password } = req.body
-    const errors = []
-    if (!email) errors.push({
-        field: 'email',
-        message: res.locals.locales.jp.email_required,
-    })
-    if (!password) {
-        errors.push({
-            field: 'password',
-            message: res.locals.locales.jp.password_required,
-        })  
-    } else if (password.length < 8 || password.length > 20) {
-        errors.push({
-            field: 'password',
-            message: res.locals.locales.jp.password_required,
-        })
-    } else if (!validatePassword(password)) {
-        errors.push({
-            field: 'password',
-            message: res.locals.locales.jp.password_invalid,
-        })
-    }
+    const errors: FormFieldErrors = {}
+    if (!email) errors.email = res.locals.locales.jp.email_required
 
-    if (errors.length > 0) {
+    if (!password) errors.password = res.locals.locales.jp.password_required
+    else if (!validatePassword(password)) errors.password = res.locals.locales.jp.password_invalid
+
+
+    if (errors.email || errors.password) {
         return res.status(401).json({
             errors,
         })
