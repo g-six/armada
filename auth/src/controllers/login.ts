@@ -25,16 +25,18 @@ const login = async (req: Request, res: Response) => {
             message: res.locals.locales.jp.password_invalid,
         })
     }
+
     if (errors.length > 0) {
         return res.status(401).json({
             errors,
         })
     }
+
     try {
         const { id, token, role, errors } = await loginUser(email, password)
 
         if (errors) {
-            res.status(401).json({
+            return res.status(401).json({
                 error: errors.map((error: string) => (res.locals.locales.jp[error] || error)).join('\n '),
             })
         }

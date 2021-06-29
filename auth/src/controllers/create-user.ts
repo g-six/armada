@@ -13,11 +13,17 @@ const create = async (req: Request, res: Response) => {
     let user: UserModel.User
     try {
         const { email, password, user_type } = req.body
-        user = await UserModel.createUser(
+        const results = await UserModel.createUser(
             email,
             password,
             user_type
         )
+        const { errors, error } = (results as UserModel.ErrorMap)
+        if (errors || error) {
+            return res.status(400).json(results)
+        }
+
+        user = results as UserModel.User
         if (!user) throw new Error('Unable to create user')
     } catch (error) {
         return res.status(400).json({

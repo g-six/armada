@@ -5,6 +5,7 @@ import { comparePassword, hashPassword } from '../utils/crypto'
 import { create, update, retrieve, Record } from '../utils/dynamodb'
 import { validateEmailAddress } from '../utils/email-helper'
 import { Request } from 'express'
+import { validatePassword } from '../utils/password-helper'
 
 type User = {
     id: string
@@ -18,6 +19,15 @@ type User = {
     logged_in_at?: number
     name?: string
     token?: string
+}
+
+type FieldError = {
+    [key: string]: string
+}
+
+type ErrorMap = {
+    error?: string
+    errors?: FieldError
 }
 
 interface UserRequest extends Request {
@@ -65,7 +75,7 @@ const createUser = async (
     email: string,
     password: string,
     role = 'admin'
-): Promise<User> => {
+): Promise<User | ErrorMap> => {
     const existing = await getByEmail(email)
     if (existing.id) {
         throw new Error(
@@ -74,6 +84,8 @@ const createUser = async (
     }
     if (!password) {
         throw new Error('PASSWORD_REQUIRED')
+    } else if (!validatePassword(password)) {
+        return { errors: { password: 'password_invalid' } }
     }
 
     const user_sort_key: string = generate()
@@ -244,7 +256,7 @@ const loginUser = async (email: string, password: string) => {
     const errors: string[] = []
 
     if (!id || !hashed_password || activation_key) {
-        errors.push('not_activated')
+        return { errors: ['login_failed'] }
     }
 
     if (!comparePassword(password, hashed_password)) {
@@ -329,4 +341,5 @@ export {
     logoutUser,
     User,
     UserRequest,
+    ErrorMap,
 }
