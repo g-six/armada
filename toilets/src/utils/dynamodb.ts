@@ -36,6 +36,7 @@ interface Record {
     sk: string
     hk2: string
     sk2: string
+    delete_at?: number
     created_at?: number
     updated_at?: number
     info: {
@@ -48,11 +49,6 @@ type KeyType = {
     sk: string
 }
 
-type RecordIdentifier = {
-    id: string
-    model: string
-}
-
 type ExpressionAttributeValuesType = {
     [key: string]: string | number | Person | Station
 }
@@ -62,7 +58,6 @@ const create = async (record: Record): Promise<Record> => {
     const Item = {
         created_at: now,
         updated_at: now,
-        hk2: generate(),
         ...record,
     }
     const doc: DynamoDB.DocumentClient.PutItemInput = {
@@ -136,18 +131,13 @@ const update = async (
 }
 
 // DynamoDB.DocumentClient.BatchWriteItemInput
-type PutRequestItems = {
-    PutRequest: {
-        TableName: string
-    }
-}
 const deleteItemAt = async (
     model: string,
     id: string
 ): Promise<DynamoDB.DocumentClient.BatchWriteItemOutput | void> => {
     const now = Math.round(Date.now() / 1000)
     return await update(
-        { hk: model, sk: `${model}#${id}` },
+        { hk: model, sk: `toilet#${id}` },
         {
             ':delat': now,
         },

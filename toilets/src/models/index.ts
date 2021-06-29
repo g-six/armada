@@ -11,13 +11,36 @@ type Model = {
     id: string
     station_id: string
     name: string
+    toilet: string
+    usage_status: UsageStatus
+    usage_count: number
+    reset_at: number
+    current_job_id?: string
     created_by?: string
+    delete_at?: number
     created_at?: number
     updated_at?: number
 }
 
+type NewRecord = {
+    station_id: string
+    name: string
+    toilet: string
+    created_by: string
+}
+
+enum UsageStatus {
+    VACANT = 'VACANT',
+    OCCUPIED = 'OCCUPIED',
+}
 type ModelInfo = {
     name: string
+    toilet: string
+    usage_status: UsageStatus
+    usage_count: number
+    reset_at: number
+    created_by: string
+    current_job_id?: string
 }
 
 type Filters = {
@@ -25,22 +48,34 @@ type Filters = {
     created_by?: string
 }
 
-const createRecord = async (
-    name: string,
-    station_id: string,
-    created_by: string
-): Promise<Model | ErrorMap | void> => {
+const createRecord = async (item: NewRecord): Promise<Model | ErrorMap | void> => {
+    const {
+        station_id,
+        name,
+        toilet,
+        created_by,
+    } = item
+
     const existing = await getStationById(station_id)
     if (!existing || ((existing as ErrorMap).errors)) {
         return existing
     }
 
     const id: string = generate()
-    const info = { name }
+
+    const info: ModelInfo = {
+        name,
+        toilet,
+        usage_count: 0,
+        usage_status: UsageStatus.VACANT,
+        reset_at: Math.round(Date.now() / 1000),
+        created_by,
+    }
+
     const record: Record = {
         hk: `toilet`,
-        sk: `station#${station_id}#${id}`,
-        hk2: `${created_by}#${id}`,
+        sk: `toilet#${id}`,
+        hk2: `station#${station_id}`,
         sk2: name,
         info,
     }
@@ -53,22 +88,15 @@ const retrieveRecords = async (filters?: Filters) => {
         'hk = :hk and begins_with(sk, :sk)',
         {
             ':hk': 'toilet',
-            ':sk': 'station#',
+            ':sk': 'toilet#',
         }
     )
 
     const toilets: Model[] = []
-    docs.map((doc) => {
+    docs.map((doc: Record) => {
         if (!doc.delete_at) {
-            const [,station_id,id] = doc.sk.split('#')
-            toilets.push({
-                id,
-                station_id,
-                created_by: doc.hk2.split('#')[0],
-                name: doc.info.name,
-                created_at: doc.created_at,
-                updated_at: doc.updated_at,
-            })
+            const toilet = normalize(doc) as Model
+            toilets.push(toilet)
         } else {
             console.log(doc)
         }
@@ -192,12 +220,18 @@ const getStationById = async (station_id: string): Promise<Model | ErrorMap> => 
 
 const normalize = (doc: Record): Model | void => {
     if (doc) {
-        const [, station_id, id] =  doc.sk.split('#')
+        const [, id] =  doc.sk.split('#')
+        const [, station_id] =  doc.hk2.split('#')
+
         return {
             id,
             station_id,
             name: doc.info.name as string,
-            created_by: doc.hk2.split('#')[0],
+            toilet: doc.info.toilet as string,
+            reset_at: doc.info.reset_at as number,
+            usage_status: doc.info.usage_status as UsageStatus,
+            usage_count: doc.info.usage_count as number,
+            created_by: doc.info.created_by as string,
             created_at: doc.created_at,
             updated_at: doc.updated_at,
         }
@@ -206,6 +240,7 @@ const normalize = (doc: Record): Model | void => {
 
 export {
     ErrorMap,
+    NewRecord,
     createRecord,
     retrieveRecords,
     updateRecord,

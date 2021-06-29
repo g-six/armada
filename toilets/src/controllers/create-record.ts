@@ -5,8 +5,14 @@ import * as Model from '../models'
 const create = async (req: Request, res: Response) => {
     try {
         const { name, station_id } = req.body
-        const user_id = (req.user as User).id
-        const doc = await Model.createRecord(name, station_id, user_id)
+        const created_by = (req.user as User).id
+        const item: Model.NewRecord = {
+            station_id,
+            name,
+            toilet: name,
+            created_by,
+        }
+        const doc = await Model.createRecord(item)
         if (!doc) throw new Error('Unable to create station')
         if ((doc as Model.ErrorMap).errors) {
             const { errors } = doc as Model.ErrorMap

@@ -6,7 +6,7 @@
 | name            | string        |     true |                                |
 | toilet          | string        |     true |                                |
 | type            | string        |     true |                                |
-| usage_status    | enum          |     true | free, occupied                 |
+| usage_status    | enum          |     true | FREE, OCCUPIED                 |
 | stock           | enum          |     true | normal, warning, refill        |
 | usage_count     | number        |     true |                                |
 | reset           | string        |     true |                                |
