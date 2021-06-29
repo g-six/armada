@@ -58,6 +58,7 @@ langs.forEach((lang: string) => {
 
 const getLocales = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     res.locals.locales = locales
+    res.locals.translate = (key: string) => ((locales.jp as unknown as { [key: string]: string })[key])
     next()
 }
 
@@ -113,6 +114,7 @@ app.post(
     '/stations',
     asyncHandler(tokenValidationHandler),
     passport.authenticate('jwt', { session: false }),
+    getLocales,
     asyncHandler(create)
 )
 app.get(
@@ -125,12 +127,14 @@ app.put(
     '/station/:id',
     asyncHandler(tokenValidationHandler),
     passport.authenticate('jwt', { session: false }),
+    getLocales,
     asyncHandler(update)
 )
 app.delete(
     '/station/:id',
     asyncHandler(tokenValidationHandler),
     passport.authenticate('jwt', { session: false }),
+    getLocales,
     asyncHandler(deleteStation)
 )
 app.get('/*', (req, res) => {

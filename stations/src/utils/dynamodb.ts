@@ -40,7 +40,7 @@ interface Record {
     created_at?: number
     updated_at?: number
     info: {
-        [key: string]: string | number
+        [key: string]: string | number | boolean
     }
 }
 

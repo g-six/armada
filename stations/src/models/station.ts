@@ -8,10 +8,36 @@ import {
     deleteItemAt,
 } from '../utils/dynamodb'
 
-type Station = {
-    id: string
+enum PaperStatus {
+    LOW = 'LOW',
+    NORMAL = 'NORMAL',
+}
+
+enum SoapStatus {
+    LOW = 'LOW',
+    NORMAL = 'NORMAL',
+}
+
+enum FacilityAlert {
+    OVERSTAY = 'OVERSTAY',
+    CONTAMINATED = 'CONTAMINATION',
+    SENSOR_UNRESPONSIVE = 'SENSOR_UNRESPONSIVE',
+    STOLEN_OR_DAMAGED = 'STOLEN_OR_DAMAGED',
+    CLEANING_REQUIRED = 'CLEANING_REQUIRED',
+}
+
+
+interface NewStationRequest {
     name: string
     line: string
+    is_controlled?: boolean
+}
+
+interface Station extends NewStationRequest {
+    id: string
+    paper: PaperStatus
+    soap: SoapStatus
+    facility_alert?: FacilityAlert
     created_by?: string
     created_at?: number
     updated_at?: number
@@ -28,6 +54,21 @@ type StationFilters = {
 
 export type ErrorList = {
     errors: string[]
+}
+
+export type CreateFieldErrors = {
+    name?: string
+    line?: string
+}
+
+export type RequestErrorMap = {
+    field: string
+    message: string
+}
+
+export type FormErrorResults = {
+    error?: string
+    errors?: RequestErrorMap[]
 }
 
 const retrieveStations = async (filters?: StationFilters) => {
@@ -52,17 +93,31 @@ const retrieveStations = async (filters?: StationFilters) => {
 }
 
 const createStation = async (
-    name: string,
-    line: string,
+    station: NewStationRequest,
     created_by: string
-): Promise<Station | { error: string }> => {
+): Promise<Station | FormErrorResults> => {
+    const errors = []
+    const { name, line } = station
+    const is_controlled = station.is_controlled || false
+    if (!name) errors.push({ field: 'name', message: 'station_name_required' })
+    if (!line) errors.push({ field: 'line', message: 'station_line_required' })
+
+    if (errors.length) return { errors }
     const existing = await getByName(name, line)
+
     if (existing) {
-        throw new Error(`"${name}" already existing`)
+        errors.push({ field: 'name', message: 'station_exists' })
     }
+    if (errors.length) return { errors }
 
     const id: string = generate()
-    const info = { name, created_by }
+    const info = {
+        paper: PaperStatus.NORMAL as string,
+        soap: SoapStatus.NORMAL as string,
+        is_controlled,
+        created_by,
+    }
+
     const record: Record = {
         hk: 'station',
         sk: `station#${id}`,
@@ -179,6 +234,9 @@ const normalize = (doc: Record): Station | void => {
             id: doc.sk.split('#')[1],
             name,
             line,
+            paper: doc.info.paper as PaperStatus,
+            soap: doc.info.soap as SoapStatus,
+            is_controlled: doc.info.is_controlled as boolean,
             created_by: doc.info.created_by as string,
             created_at: doc.created_at,
             updated_at: doc.updated_at,
