@@ -9,6 +9,7 @@ import me from './controllers/me'
 
 import configurePassport, { ExtractJWT } from './config/passport'
 import { getByIdAndToken, UserRequest } from './models/user'
+import { readFileSync, readdirSync } from 'fs-extra'
 
 const app = express()
 type NestedData = {
@@ -66,6 +67,22 @@ const asyncHandler =
             )
         }
     }
+    
+type LocaleKeyValuePair = {
+    [key: string]: string
+}
+
+const langs = readdirSync(`${__dirname}/locales`)
+const locales: LocaleKeyValuePair = {}
+
+langs.forEach((lang: string) => {
+    locales[lang] = JSON.parse(readFileSync(`${__dirname}/locales/${lang}/translation.json`, { encoding: "utf8", flag: "r" }))
+})
+
+const getLocales = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    res.locals.locales = locales
+    next()
+}
 
 const tokenValidationHandler = async (
     req: express.Request,
@@ -89,13 +106,14 @@ const tokenValidationHandler = async (
 }
 
 // Routes
-app.post('/login', asyncHandler(login))
-app.post('/signup', asyncHandler(create))
+app.post('/login', getLocales, asyncHandler(login))
+app.post('/signup', getLocales, asyncHandler(create))
 app.get('/activate', asyncHandler(activate))
 app.get(
     '/me',
     asyncHandler(tokenValidationHandler),
     passport.authenticate('jwt', { session: false }),
+    getLocales,
     me
 )
 app.delete(

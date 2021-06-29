@@ -5,6 +5,7 @@ import { comparePassword, hashPassword } from '../utils/crypto'
 import { create, update, retrieve, Record } from '../utils/dynamodb'
 import { validateEmailAddress } from '../utils/email-helper'
 import { Request } from 'express'
+import { validatePassword } from '../utils/password-helper'
 
 type User = {
     id: string
@@ -18,6 +19,16 @@ type User = {
     logged_in_at?: number
     name?: string
     token?: string
+}
+
+type FieldError = {
+    field: string
+    message: string
+}
+
+type ErrorMap = {
+    error?: string
+    errors?: FieldError[]
 }
 
 interface UserRequest extends Request {
@@ -65,7 +76,7 @@ const createUser = async (
     email: string,
     password: string,
     role = 'admin'
-): Promise<User> => {
+): Promise<User | ErrorMap> => {
     const existing = await getByEmail(email)
     if (existing.id) {
         throw new Error(
@@ -73,7 +84,9 @@ const createUser = async (
         )
     }
     if (!password) {
-        throw new Error('"password" is required.')
+        throw new Error('PASSWORD_REQUIRED')
+    } else if (!validatePassword(password)) {
+        return { errors: [{ field: 'password', message: 'password_invalid' }] }
     }
 
     const user_sort_key: string = generate()
@@ -113,11 +126,11 @@ const createUser = async (
 const getByEmail = async (email: string) => {
     // Validate
     if (!email) {
-        throw new Error('"email" is required')
+        throw new Error('EMAIL_REQUIRED')
     }
 
     if (!validateEmailAddress(email)) {
-        throw new Error(`"${email}" is not a valid email address`)
+        throw new Error('EMAIL_INVALID')
     }
 
     const { Items } = await retrieve(
@@ -244,17 +257,15 @@ const loginUser = async (email: string, password: string) => {
     const errors: string[] = []
 
     if (!id || !hashed_password || activation_key) {
-        throw new Error(
-            'Please sign up or activate your account using the link emailed'
-        )
+        return { errors: ['login_failed'] }
     }
 
     if (!comparePassword(password, hashed_password)) {
-        errors.push('Wrong email or password')
+        errors.push('login_failed')
     }
 
     if (errors.length > 0) {
-        throw new Error('  ' + errors.join('\n  '))
+        return { errors }
     }
 
     const token = jwt.sign(
@@ -331,4 +342,5 @@ export {
     logoutUser,
     User,
     UserRequest,
+    ErrorMap,
 }
