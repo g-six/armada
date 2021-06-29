@@ -6,9 +6,8 @@
 | name            | string        |     true |
 | toilet          | string        |     true |
 | type            | string        |     true |
-| usage_status    | enum          |     true |
-| stock           | enum          |     true |
-| last_alert      | string        |     true |
+| usage_status    | enum          |     true | free, occupied
+| stock           | enum          |     true | normal, warning, refill
 | usage_count     | number        |     true |
 | reset           | string        |     true |
 | current_job_id  | string        |     true | 
