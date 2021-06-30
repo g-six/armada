@@ -1,35 +1,40 @@
 import { Request, Response } from 'express'
 import { loginUser } from '../models/user'
-import {
-    translateError,
-    translateFieldError,
-} from '../utils/error-helper'
+import { validateEmailAddress } from '../utils/email-helper'
+import { FieldError } from '../utils/error-helper'
 import { validatePassword } from '../utils/password-helper'
-
-type FormFieldErrors = {
-    code: string
-    message: string
-}
 
 const login = async (req: Request, res: Response) => {
     const { email, password } = req.body
-    let errors: { [key: string]: string | FormFieldErrors } = {}
-    const error_codes = {}
-    if (!email)
+    let errors: { [key: string]: string | FieldError } = {}
+
+    if (!email) {
         errors = {
             ...errors,
             email: {
                 code: 'email_required',
-                message: res.locals.translateError('email_required'),
+                message:
+                    res.locals.translateError('email_required'),
             },
         }
+    } else if (!validateEmailAddress(email)) {
+        errors = {
+            ...errors,
+            email: {
+                code: 'email_invalid',
+                message: res.locals.translateError('email_invalid'),
+            },
+        }
+    }
 
     if (!password) {
         errors = {
             ...errors,
             password: {
                 code: 'password_required',
-                message: res.locals.translateError('password_required'),
+                message: res.locals.translateError(
+                    'password_required'
+                ),
             },
         }
     } else if (!validatePassword(password)) {
@@ -37,7 +42,9 @@ const login = async (req: Request, res: Response) => {
             ...errors,
             password: {
                 code: 'password_invalid',
-                message: res.locals.translateError('password_invalid'),
+                message: res.locals.translateError(
+                    'password_invalid'
+                ),
             },
         }
     }
@@ -56,7 +63,10 @@ const login = async (req: Request, res: Response) => {
 
         if (error) {
             return res.status(401).json({
-                error: res.locals.translateError(error),
+                error: {
+                    code: error,
+                    message: res.locals.translateError(error),
+                },
             })
         }
         return res.status(200).json({

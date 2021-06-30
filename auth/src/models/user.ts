@@ -22,13 +22,15 @@ type User = {
 }
 
 type FieldError = {
-    field: string
+    code: string
     message: string
 }
 
 type ErrorMap = {
     error?: string
-    errors?: FieldError[]
+    errors?: {
+        [key: string]: string
+    }
 }
 
 interface UserRequest extends Request {
@@ -78,20 +80,31 @@ const createUser = async (
     role = 'admin'
 ): Promise<User | ErrorMap> => {
     const existing = await getByEmail(email)
-    if (existing.id) {
-        throw new Error(
-            `"${email}" already registered.  Please select a different email or reset your password`
-        )
-    }
-    if (!password) {
-        throw new Error('PASSWORD_REQUIRED')
-    } else if (!validatePassword(password)) {
-        return {
-            errors: [
-                { field: 'password', message: 'password_invalid' },
-            ],
+    let errors: { [key: string]: string }
+    if (existing) {
+        errors = {
+            ...errors,
+            email: 'already_registered',
         }
     }
+    if (!password) {
+        errors = {
+            ...errors,
+            password: 'password_required',
+        }
+    } else if (password.length > 20 || password.length < 8) {
+        errors = {
+            ...errors,
+            password: 'password_length_error',
+        }
+    } else if (!validatePassword(password)) {
+        errors = {
+            ...errors,
+            password: 'password_invalid',
+        }
+    }
+
+    if (errors) return { errors }
 
     const user_sort_key: string = generate()
     const activation_key = `ak.${generate()}`
@@ -130,11 +143,11 @@ const createUser = async (
 const getByEmail = async (email: string) => {
     // Validate
     if (!email) {
-        throw new Error('EMAIL_REQUIRED')
+        return { errors: { email: 'email_required' } }
     }
 
     if (!validateEmailAddress(email)) {
-        throw new Error('EMAIL_INVALID')
+        return { errors: { email: 'email_invalid' } }
     }
 
     const { Items } = await retrieve(
@@ -156,7 +169,7 @@ const getByEmail = async (email: string) => {
             hashed_password,
         }
     }
-    return {}
+    return
 }
 
 /**
