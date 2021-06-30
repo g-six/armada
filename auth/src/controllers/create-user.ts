@@ -12,7 +12,6 @@ const protocol: string =
 
 const create = async (req: Request, res: Response) => {
     let user: UserModel.User
-    let errors: { [key: string]: string | FieldError } = {}
 
     try {
         const { email, password, user_type } = req.body
