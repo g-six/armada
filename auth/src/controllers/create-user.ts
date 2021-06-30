@@ -5,12 +5,15 @@ import {
     Receipient,
     TemplateOptions,
 } from '../utils/email-helper'
+import { FieldError } from '../utils/error-helper'
 
 const protocol: string =
     process.env.NODE_ENV === 'local' ? 'http' : 'https'
 
 const create = async (req: Request, res: Response) => {
     let user: UserModel.User
+    let errors: { [key: string]: string | FieldError } = {}
+
     try {
         const { email, password, user_type } = req.body
         const results = await UserModel.createUser(
@@ -18,20 +21,23 @@ const create = async (req: Request, res: Response) => {
             password,
             user_type
         )
-        const { errors: errs, error } =
-            results as UserModel.ErrorMap
-        if (errs || error) {
-            const errors: { [key: string]: string } = {}
-            if (errors) {
-                errs.forEach(({ field, message }) => {
-                    errors[field] = res.locals.locales.jp[
-                        message
-                    ] as string
-                })
+        const { errors } = results as UserModel.ErrorMap
+        
+        if (errors) {
+            let email_error, password_error
+            if (errors.email) email_error = {
+                code: errors.email,
+                message: res.locals.translateError(errors.email),
+            }
+            if (errors.password) password_error = {
+                code: errors.password,
+                message: res.locals.translateError(errors.password),
             }
             return res.status(400).json({
-                error: error && res.locals.locales.jp[error],
-                errors,
+                errors: {
+                    email: email_error,
+                    password: password_error,
+                },
             })
         }
 

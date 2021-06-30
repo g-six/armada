@@ -1,5 +1,6 @@
 {
     "email_required": "メールアドレスは必須項目です。",
+    "email_invalid": "メールアドレスは必須項目です。",
     "not_activated": "メールは存在しません。\n登録されたメールアドレスを入力してください。",
     "password_invalid": "パスワードには英数字を含める必要があります。",
     "password_required": "パスワードは必須項目です。",
