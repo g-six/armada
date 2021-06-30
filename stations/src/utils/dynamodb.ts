@@ -14,7 +14,6 @@ if (process.env.NODE_ENV == 'local') {
         region: process.env.region,
     }
 }
-console.log(dbopts)
 
 const dynamodb = new DynamoDB.DocumentClient(dbopts)
 const TableName: string = process.env.db as string

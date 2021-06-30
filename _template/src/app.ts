@@ -1,21 +1,22 @@
 import * as express from 'express'
 import * as passport from 'passport'
 import * as jwt from 'jsonwebtoken'
+import { readFileSync, readdirSync } from 'fs-extra'
+
+import configurePassport, { ExtractJWT } from './config/passport'
 import createRecord from './controllers/create-record'
 import retrieveRecords from './controllers/retrieve-record'
 import updateRecord from './controllers/update-record'
 import deleteRecord from './controllers/delete-record'
+import { getByIdAndToken, UserRequest } from './models/user'
 
-import configurePassport, { ExtractJWT } from './config/passport'
-import { getByIdAndToken } from './models/user'
-import { readFileSync, readdirSync } from 'fs-extra'
 
 const app = express()
 type NestedData = {
     [key: string]: string | number
 }
 type func = (
-    req: express.Request,
+    req: express.Request | UserRequest,
     res: express.Response,
     next?: express.NextFunction
 ) => Promise<express.Response<any, Record<string, NestedData>>>

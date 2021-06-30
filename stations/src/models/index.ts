@@ -65,9 +65,11 @@ export type RequestErrorMap = {
     message: string
 }
 
-export type FormErrorResults = {
+export type ErrorMap = {
     error?: string
-    errors?: RequestErrorMap[]
+    errors?: {
+        [key: string]: string
+    }
 }
 
 const retrieveStations = async (filters?: StationFilters) => {
@@ -94,28 +96,33 @@ const retrieveStations = async (filters?: StationFilters) => {
 const createStation = async (
     station: NewStationRequest,
     created_by: string
-): Promise<Station | FormErrorResults> => {
-    const errors = []
+): Promise<Station | ErrorMap> => {
     const { name, line } = station
     const is_controlled = station.is_controlled || false
-    if (!name)
-        errors.push({
-            field: 'name',
-            message: 'station_name_required',
-        })
-    if (!line)
-        errors.push({
-            field: 'line',
-            message: 'station_line_required',
-        })
+    let errors: { [key: string]: string }
 
-    if (errors.length) return { errors }
+    if (!name)
+        errors = {
+            name: 'station_name_required',
+        }
+    if (!line)
+        errors = {
+            ...errors,
+            line: 'station_line_required',
+        }
+
+    if (errors) return { errors }
+
     const existing = await getByName(name, line)
 
     if (existing) {
-        errors.push({ field: 'name', message: 'station_exists' })
+        errors = {
+            ...errors,
+            name: 'station_exists',
+        }
     }
-    if (errors.length) return { errors }
+
+    if (errors) return { errors }
 
     const id: string = generate()
     const info = {
@@ -236,6 +243,7 @@ const deleteStation = async (id: string) => {
 }
 
 const normalize = (doc: Record): Station | void => {
+    console.log(doc)
     if (doc) {
         const [name, line] = doc.sk2.split('#')
         return {

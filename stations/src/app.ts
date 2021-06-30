@@ -3,20 +3,20 @@ import * as passport from 'passport'
 import * as jwt from 'jsonwebtoken'
 import { readdirSync, readFileSync } from 'fs-extra'
 
+import configurePassport, { ExtractJWT } from './config/passport'
 import create from './controllers/create-station'
 import retrieveStations from './controllers/retrieve-stations'
 import update from './controllers/update-station'
 import deleteStation from './controllers/delete-station'
 
-import configurePassport, { ExtractJWT } from './config/passport'
-import { getByIdAndToken } from './models/user'
+import { getByIdAndToken, UserRequest } from './models/user'
 
 const app = express()
 type NestedData = {
     [key: string]: string | number
 }
 type func = (
-    req: express.Request,
+    req: express.Request | UserRequest,
     res: express.Response,
     next?: express.NextFunction
 ) => Promise<express.Response<any, Record<string, NestedData>>>
@@ -72,7 +72,7 @@ const getLocales = async (
 
     res.locals.translateError = (key: string) => ({
         code: key,
-        message: res.locals.translate[key],
+        message: res.locals.translate(key) || key,
     })
 
     next()

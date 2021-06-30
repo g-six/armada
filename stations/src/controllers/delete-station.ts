@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { deleteStation } from '../models/station'
+import { deleteStation } from '../models'
 
 const fn = async (req: Request, res: Response) => {
     const { id: station_id } = req.params

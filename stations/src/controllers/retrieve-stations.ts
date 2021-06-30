@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { retrieveStations } from '../models/station'
+import { retrieveStations } from '../models'
 
 export default async (req: Request, res: Response) => {
     const docs = await retrieveStations()
