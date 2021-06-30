@@ -86,7 +86,11 @@ const createUser = async (
     if (!password) {
         throw new Error('PASSWORD_REQUIRED')
     } else if (!validatePassword(password)) {
-        return { errors: [{ field: 'password', message: 'password_invalid' }] }
+        return {
+            errors: [
+                { field: 'password', message: 'password_invalid' },
+            ],
+        }
     }
 
     const user_sort_key: string = generate()
@@ -254,18 +258,14 @@ const getByIdAndToken = async (id: string, token: string) => {
 const loginUser = async (email: string, password: string) => {
     const { activation_key, hashed_password, id, role } =
         await getByEmail(email)
-    const errors: string[] = []
 
-    if (!id || !hashed_password || activation_key) {
-        return { errors: ['login_failed'] }
-    }
-
-    if (!comparePassword(password, hashed_password)) {
-        errors.push('login_failed')
-    }
-
-    if (errors.length > 0) {
-        return { errors }
+    if (
+        !id ||
+        !hashed_password ||
+        activation_key ||
+        !comparePassword(password, hashed_password)
+    ) {
+        return { error: 'login_failed' }
     }
 
     const token = jwt.sign(

@@ -1,0 +1,4 @@
+**/.config
+*.cache
+*.ideas
+node_modules

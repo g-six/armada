@@ -1,19 +1,39 @@
 import { Request, Response } from 'express'
 import { loginUser } from '../models/user'
+import {
+    translateError,
+    translateFieldError,
+} from '../utils/error-helper'
 import { validatePassword } from '../utils/password-helper'
 
 type FormFieldErrors = {
-    email?: string
-    password?: string
+    code: string
+    field: string
 }
+
 const login = async (req: Request, res: Response) => {
     const { email, password } = req.body
-    const errors: FormFieldErrors = {}
-    if (!email) errors.email = res.locals.locales.jp.email_required
+    let errors: { [key: string]: string } = {}
+    const error_codes = {}
+    if (!email)
+        errors = {
+            ...errors,
+            email: res.locals.translateError('email_required'),
+        }
 
-    if (!password) errors.password = res.locals.locales.jp.password_required
-    else if (!validatePassword(password)) errors.password = res.locals.locales.jp.password_invalid
-
+    if (!password) {
+        errors = {
+            ...errors,
+            password: res.locals.translateError(
+                'password_required'
+            ),
+        }
+    } else if (!validatePassword(password)) {
+        errors = {
+            ...errors,
+            password: res.locals.translateError('password_invalid'),
+        }
+    }
 
     if (errors.email || errors.password) {
         return res.status(401).json({
@@ -22,11 +42,14 @@ const login = async (req: Request, res: Response) => {
     }
 
     try {
-        const { id, token, role, errors } = await loginUser(email, password)
+        const { id, token, role, error } = await loginUser(
+            email,
+            password
+        )
 
-        if (errors) {
+        if (error) {
             return res.status(401).json({
-                error: errors.map((error: string) => (res.locals.locales.jp[error] || error)).join('\n '),
+                error: res.locals.translateError(error),
             })
         }
         return res.status(200).json({
