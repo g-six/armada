@@ -53,12 +53,28 @@ const langs = readdirSync(`${__dirname}/locales`)
 const locales: LocaleKeyValuePair = {}
 
 langs.forEach((lang: string) => {
-    locales[lang] = JSON.parse(readFileSync(`${__dirname}/locales/${lang}/translation.json`, { encoding: "utf8", flag: "r" }))
+    locales[lang] = JSON.parse(
+        readFileSync(
+            `${__dirname}/locales/${lang}/translation.json`,
+            { encoding: 'utf8', flag: 'r' }
+        )
+    )
 })
 
-const getLocales = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+const getLocales = async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+) => {
     res.locals.locales = locales
-    res.locals.translate = (key: string) => ((locales.jp as unknown as { [key: string]: string })[key])
+    res.locals.translate = (key: string) =>
+        (locales.jp as unknown as { [key: string]: string })[key]
+
+    res.locals.translateError = (key: string) => ({
+        code: key,
+        message: res.locals.translate[key],
+    })
+
     next()
 }
 

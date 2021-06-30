@@ -13,7 +13,8 @@ const login = async (req: Request, res: Response) => {
             ...errors,
             email: {
                 code: 'email_required',
-                message: res.locals.translateError('email_required'),
+                message:
+                    res.locals.translateError('email_required'),
             },
         }
     } else if (!validateEmailAddress(email)) {
@@ -31,7 +32,9 @@ const login = async (req: Request, res: Response) => {
             ...errors,
             password: {
                 code: 'password_required',
-                message: res.locals.translateError('password_required'),
+                message: res.locals.translateError(
+                    'password_required'
+                ),
             },
         }
     } else if (!validatePassword(password)) {
@@ -39,7 +42,9 @@ const login = async (req: Request, res: Response) => {
             ...errors,
             password: {
                 code: 'password_invalid',
-                message: res.locals.translateError('password_invalid'),
+                message: res.locals.translateError(
+                    'password_invalid'
+                ),
             },
         }
     }

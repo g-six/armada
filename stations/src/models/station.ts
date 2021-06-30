@@ -26,7 +26,6 @@ enum FacilityAlert {
     CLEANING_REQUIRED = 'CLEANING_REQUIRED',
 }
 
-
 interface NewStationRequest {
     name: string
     line: string
@@ -99,8 +98,16 @@ const createStation = async (
     const errors = []
     const { name, line } = station
     const is_controlled = station.is_controlled || false
-    if (!name) errors.push({ field: 'name', message: 'station_name_required' })
-    if (!line) errors.push({ field: 'line', message: 'station_line_required' })
+    if (!name)
+        errors.push({
+            field: 'name',
+            message: 'station_name_required',
+        })
+    if (!line)
+        errors.push({
+            field: 'line',
+            message: 'station_line_required',
+        })
 
     if (errors.length) return { errors }
     const existing = await getByName(name, line)
@@ -127,9 +134,10 @@ const createStation = async (
     }
     const doc = await create(record)
 
-    if (!doc) return {
-        error: 'create_station_failed'
-    }
+    if (!doc)
+        return {
+            error: 'create_station_failed',
+        }
     return normalize(doc) as Station
 }
 
@@ -182,7 +190,7 @@ const updateStation = async (
  * @returns Station document
  */
 const getByName = async (name: string, line: string) => {
-    const errors: { [key:string]: string }[] = []
+    const errors: { [key: string]: string }[] = []
     if (!name) {
         errors.push({
             name: 'station_name_required',

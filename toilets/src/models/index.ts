@@ -48,16 +48,13 @@ type Filters = {
     created_by?: string
 }
 
-const createRecord = async (item: NewRecord): Promise<Model | ErrorMap | void> => {
-    const {
-        station_id,
-        name,
-        toilet,
-        created_by,
-    } = item
+const createRecord = async (
+    item: NewRecord
+): Promise<Model | ErrorMap | void> => {
+    const { station_id, name, toilet, created_by } = item
 
     const existing = await getStationById(station_id)
-    if (!existing || ((existing as ErrorMap).errors)) {
+    if (!existing || (existing as ErrorMap).errors) {
         return existing
     }
 
@@ -197,11 +194,13 @@ type ErrorMap = {
     errors: FieldError | null
 }
 /**
- * 
- * @param station_id 
+ *
+ * @param station_id
  * @returns station record
  */
-const getStationById = async (station_id: string): Promise<Model | ErrorMap> => {
+const getStationById = async (
+    station_id: string
+): Promise<Model | ErrorMap> => {
     const Errors: ErrorMap = { errors: null }
     // Validate
     if (station_id === undefined || !station_id) {
@@ -220,8 +219,8 @@ const getStationById = async (station_id: string): Promise<Model | ErrorMap> => 
 
 const normalize = (doc: Record): Model | void => {
     if (doc) {
-        const [, id] =  doc.sk.split('#')
-        const [, station_id] =  doc.hk2.split('#')
+        const [, id] = doc.sk.split('#')
+        const [, station_id] = doc.hk2.split('#')
 
         return {
             id,

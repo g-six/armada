@@ -22,17 +22,23 @@ const create = async (req: Request, res: Response) => {
             user_type
         )
         const { errors } = results as UserModel.ErrorMap
-        
+
         if (errors) {
             let email_error, password_error
-            if (errors.email) email_error = {
-                code: errors.email,
-                message: res.locals.translateError(errors.email),
-            }
-            if (errors.password) password_error = {
-                code: errors.password,
-                message: res.locals.translateError(errors.password),
-            }
+            if (errors.email)
+                email_error = {
+                    code: errors.email,
+                    message: res.locals.translateError(
+                        errors.email
+                    ),
+                }
+            if (errors.password)
+                password_error = {
+                    code: errors.password,
+                    message: res.locals.translateError(
+                        errors.password
+                    ),
+                }
             return res.status(400).json({
                 errors: {
                     email: email_error,

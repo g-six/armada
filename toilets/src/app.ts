@@ -118,7 +118,9 @@ app.delete(
     asyncHandler(deleteRecord)
 )
 app.get('/*', (req, res) => {
-    res.send(`[Toilets API] Request received: ${req.method} - ${req.path}`)
+    res.send(
+        `[Toilets API] Request received: ${req.method} - ${req.path}`
+    )
 })
 
 // Error handler

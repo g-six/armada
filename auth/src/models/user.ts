@@ -30,7 +30,7 @@ type ErrorMap = {
     error?: string
     errors?: {
         [key: string]: string
-    },
+    }
 }
 
 interface UserRequest extends Request {

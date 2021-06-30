@@ -6,9 +6,13 @@ const create = async (req: Request, res: Response) => {
     try {
         const { name, line } = req.body
         const user_id = (req.user as User).id
-        const results = await Model.createStation({ name, line }, user_id)
-        const { error, errors: error_list } = results as Model.FormErrorResults
-        
+        const results = await Model.createStation(
+            { name, line },
+            user_id
+        )
+        const { error, errors: error_list } =
+            results as Model.FormErrorResults
+
         let bad_results
         if (error) {
             bad_results = {
@@ -18,8 +22,9 @@ const create = async (req: Request, res: Response) => {
 
         if (error_list) {
             const errors: { [key: string]: string } = {}
-            error_list.map(err => {
-                errors[err.field as string] = res.locals.translate(err.message) || err.message
+            error_list.map((err) => {
+                errors[err.field as string] =
+                    res.locals.translate(err.message) || err.message
             })
             bad_results = {
                 errors,
