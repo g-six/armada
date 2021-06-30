@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { User } from '../models/user'
 import * as Model from '../models'
+import { FieldError } from '../utils/error-helper'
 
 const create = async (req: Request, res: Response) => {
     try {
