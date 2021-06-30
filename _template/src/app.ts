@@ -1,20 +1,22 @@
 import * as express from 'express'
 import * as passport from 'passport'
 import * as jwt from 'jsonwebtoken'
+import { readFileSync, readdirSync } from 'fs-extra'
+
+import configurePassport, { ExtractJWT } from './config/passport'
 import createRecord from './controllers/create-record'
 import retrieveRecords from './controllers/retrieve-record'
 import updateRecord from './controllers/update-record'
 import deleteRecord from './controllers/delete-record'
+import { getByIdAndToken, UserRequest } from './models/user'
 
-import configurePassport, { ExtractJWT } from './config/passport'
-import { getByIdAndToken } from './models/user'
 
 const app = express()
 type NestedData = {
     [key: string]: string | number
 }
 type func = (
-    req: express.Request,
+    req: express.Request | UserRequest,
     res: express.Response,
     next?: express.NextFunction
 ) => Promise<express.Response<any, Record<string, NestedData>>>
@@ -66,6 +68,35 @@ const asyncHandler =
         }
     }
 
+type LocaleKeyValuePair = {
+    [key: string]: string
+}
+
+const langs = readdirSync(`${__dirname}/locales`)
+const locales: LocaleKeyValuePair = {}
+
+langs.forEach((lang: string) => {
+    locales[lang] = JSON.parse(
+        readFileSync(
+            `${__dirname}/locales/${lang}/translation.json`,
+            { encoding: 'utf8', flag: 'r' }
+        )
+    )
+})
+
+const getLocales = async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+) => {
+    res.locals.locales = locales
+    res.locals.translateError = (code: string) =>
+        (locales.jp as unknown as { [key: string]: string })[
+            code as string
+        ]
+    next()
+}
+
 const tokenValidationHandler = async (
     req: express.Request,
     res: express.Response,
@@ -97,24 +128,28 @@ app.post(
     '/{{service}}',
     asyncHandler(tokenValidationHandler),
     passport.authenticate('jwt', { session: false }),
+    getLocales,
     asyncHandler(createRecord)
 )
 app.get(
     '/{{service}}',
     asyncHandler(tokenValidationHandler),
     passport.authenticate('jwt', { session: false }),
+    getLocales,
     asyncHandler(retrieveRecords)
 )
 app.put(
     '/{{model}}/:id',
     asyncHandler(tokenValidationHandler),
     passport.authenticate('jwt', { session: false }),
+    getLocales,
     asyncHandler(updateRecord)
 )
 app.delete(
     '/{{model}}/:id',
     asyncHandler(tokenValidationHandler),
     passport.authenticate('jwt', { session: false }),
+    getLocales,
     asyncHandler(deleteRecord)
 )
 app.get('/*', (req, res) => {

@@ -21,11 +21,6 @@ type User = {
     token?: string
 }
 
-type FieldError = {
-    code: string
-    message: string
-}
-
 type ErrorMap = {
     error?: string
     errors?: {

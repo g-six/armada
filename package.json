@@ -30,6 +30,8 @@
     },
     "scripts": {
         "dev": "nodemon --config nodemon.json server.ts",
-        "format": "prettier --config .prettierrc '*/src/**/*.ts' --write"
+        "create-armada-svc": "ts-node generate.ts",
+        "cas": "npm run create-armada-svc",
+        "format": "prettier --config .prettierrc ./**/src/**/*.ts --write"
     }
 }

@@ -6,7 +6,6 @@ import {
     ExtractJwt as ExtractJWT,
     Strategy as StrategyJWT,
     StrategyOptions,
-    VerifiedCallback,
 } from 'passport-jwt'
 
 import * as UserModel from '../models/user'

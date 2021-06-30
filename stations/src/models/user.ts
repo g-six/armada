@@ -13,6 +13,9 @@ type User = {
     name?: string
     token?: string
 }
+interface UserRequest extends Request {
+    user: User
+}
 /**
  *
  * @param id DynamoDB hash key (primary key)
@@ -77,4 +80,4 @@ const getByIdAndToken = async (id: string, token: string) => {
     return false
 }
 
-export { getById, getByIdAndToken, User }
+export { getById, getByIdAndToken, User, UserRequest }

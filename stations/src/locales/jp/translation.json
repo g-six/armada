@@ -1,5 +1,9 @@
 {
     "station_line_exists": "{{$1}}はすでに存在しています。",
     "station_line_required": "線区​は必須です。",
-    "station_name_required": "駅名は必須です。"
+    "station_name_required": "駅名は必須です。",
+    "paper.NORMAL": "ー",
+    "paper.LOW": "少ない",
+    "soap.NORMAL": "ー",
+    "soap.LOW": "要補充"
 }

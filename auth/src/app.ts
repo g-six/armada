@@ -1,15 +1,16 @@
 import * as express from 'express'
 import * as passport from 'passport'
 import * as jwt from 'jsonwebtoken'
+import { readFileSync, readdirSync } from 'fs-extra'
+
+import configurePassport, { ExtractJWT } from './config/passport'
 import activate from './controllers/activate'
 import create from './controllers/create-user'
 import login from './controllers/login'
 import logout from './controllers/logout'
 import me from './controllers/me'
-
-import configurePassport, { ExtractJWT } from './config/passport'
 import { getByIdAndToken, UserRequest } from './models/user'
-import { readFileSync, readdirSync } from 'fs-extra'
+
 
 const app = express()
 type NestedData = {

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { updateStation } from '../models/station'
+import { updateStation } from '../models'
 
 const update = async (req: Request, res: Response) => {
     const id: string = decodeURIComponent(req.params.id as string)
