@@ -8,30 +8,37 @@ import { validatePassword } from '../utils/password-helper'
 
 type FormFieldErrors = {
     code: string
-    field: string
+    message: string
 }
 
 const login = async (req: Request, res: Response) => {
     const { email, password } = req.body
-    let errors: { [key: string]: string } = {}
+    let errors: { [key: string]: string | FormFieldErrors } = {}
     const error_codes = {}
     if (!email)
         errors = {
             ...errors,
-            email: res.locals.translateError('email_required'),
+            email: {
+                code: 'email_required',
+                message: res.locals.translateError('email_required'),
+            },
         }
 
     if (!password) {
         errors = {
             ...errors,
-            password: res.locals.translateError(
-                'password_required'
-            ),
+            password: {
+                code: 'password_required',
+                message: res.locals.translateError('password_required'),
+            },
         }
     } else if (!validatePassword(password)) {
         errors = {
             ...errors,
-            password: res.locals.translateError('password_invalid'),
+            password: {
+                code: 'password_invalid',
+                message: res.locals.translateError('password_invalid'),
+            },
         }
     }
 
