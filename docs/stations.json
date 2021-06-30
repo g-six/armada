@@ -1,0 +1,26 @@
+{
+  "docs": [
+    {
+      "id": "3T4yU0hyv",
+      "name": "関西本線",
+      "line": "JR難波駅",
+      "paper": "NORMAL",
+      "soap": "NORMAL",
+      "is_controlled": false,
+      "created_by": "7aSDUPeBu",
+      "created_at": 1625052764,
+      "updated_at": 1625052764
+    },
+    {
+      "id": "sfiXFph52",
+      "name": "関西本線",
+      "line": "名古屋駅",
+      "paper": "NORMAL",
+      "soap": "NORMAL",
+      "is_controlled": false,
+      "created_by": "7aSDUPeBu",
+      "created_at": 1625051963,
+      "updated_at": 1625051963
+    }
+  ]
+}
