@@ -77,10 +77,10 @@ const createUser = async (
     const existing = await getByEmail(email)
     let errors: { [key: string]: string }
     if (existing) {
-        console.log(existing)
         errors = {
             ...errors,
             email: 'already_registered',
+            ...existing.errors,
         }
     }
     if (!password) {
