@@ -3,8 +3,8 @@ import {
     create,
     update,
     retrieve,
-    Record,
     deleteItemAt,
+    Document,
 } from '../utils/dynamodb'
 
 type Model = {
@@ -139,7 +139,7 @@ const getByName = async (name: string) => {
         process.env.dbIndex2
     )
 
-    return normalize(doc as Record)
+    return normalize(doc as Document)
 }
 
 /**
@@ -158,14 +158,14 @@ const getById = async (id: string) => {
         ':sk': `{{model}}#${id}`,
     })
 
-    return normalize(doc as Record)
+    return normalize(doc as Document)
 }
 
 const deleteRecord = async (id: string) => {
     return await deleteItemAt('{{model}}', id)
 }
 
-const normalize = (doc: Record): Model | void => {
+const normalize = (doc: Document): Model | void => {
     if (doc) {
         return {
             id: doc.sk.split('#')[1],
