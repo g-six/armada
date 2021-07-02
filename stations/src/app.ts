@@ -125,6 +125,11 @@ const tokenValidationHandler = async (
     next()
 }
 
+// CORS
+app.options('*', (req: express.Request, res: express.Response) => {
+    res.status(200).send()
+})
+
 // Routes
 app.post(
     '/stations',

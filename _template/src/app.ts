@@ -121,6 +121,11 @@ const tokenValidationHandler = async (
     next()
 }
 
+// CORS
+app.options('*', (req: express.Request, res: express.Response) => {
+    res.status(200).send()
+})
+
 // Routes
 // You may remove tokenValidationHandler and passport middleware
 // if you do not implement authentication in these routes
