@@ -2,6 +2,8 @@ component: express
 name: auth
 provider:
   runtime: nodejs14.x
+  httpApi:
+    cors: true
 inputs:
   src: 
     src: ./src

@@ -125,6 +125,9 @@ app.options('*', (req: express.Request, res: express.Response) => {
 })
 
 // Routes
+app.options('*', (req: express.Request, res: express.Response) => {
+    res.status(200).send()
+})
 app.post('/login', getLocales, asyncHandler(login))
 app.post('/signup', getLocales, asyncHandler(create))
 app.get('/activate', asyncHandler(activate))

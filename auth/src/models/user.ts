@@ -22,10 +22,11 @@ type User = {
 }
 
 type ErrorMap = {
+    [key: string]: string
+}
+type ModelErrorResponse = {
     error?: string
-    errors?: {
-        [key: string]: string
-    }
+    errors?: ErrorMap
 }
 
 interface UserRequest extends Request {
@@ -73,7 +74,7 @@ const createUser = async (
     email: string,
     password: string,
     role = 'admin'
-): Promise<User | ErrorMap> => {
+): Promise<User | ModelErrorResponse> => {
     const existing = await getByEmail(email)
     let errors: { [key: string]: string }
     if (existing) {
@@ -163,6 +164,8 @@ const getByEmail = async (email: string) => {
             email,
             activation_key,
             hashed_password,
+            created_at: doc.created_at,
+            updated_at: doc.updated_at,
         }
     }
     return
@@ -264,14 +267,51 @@ const getByIdAndToken = async (id: string, token: string) => {
     return false
 }
 
-const loginUser = async (email: string, password: string) => {
-    const { activation_key, hashed_password, id, role } =
-        await getByEmail(email)
+const loginUser = async (
+    email: string,
+    password: string
+): Promise<User | ModelErrorResponse> => {
+    let errors: ErrorMap
+
+    if (!email) {
+        errors = { email: 'email_required' }
+    } else if (!validateEmailAddress(email)) {
+        errors = { email: 'email_invalid' }
+    }
+
+    if (!password) {
+        errors = {
+            ...errors,
+            password: 'password_required',
+        }
+    } else if (password.length < 8 || password.length > 20) {
+        errors = {
+            ...errors,
+            password: 'password_length_error',
+        }
+    }
+
+    if (errors) {
+        return { errors, error: 'login_failed' }
+    }
+
+    const user = await getByEmail(email)
+    if (!user) {
+        return { error: 'login_failed' }
+    }
+
+    const {
+        activation_key,
+        hashed_password,
+        id,
+        role,
+        updated_at,
+        created_at,
+    } = user
 
     if (
         !id ||
         !hashed_password ||
-        activation_key ||
         !comparePassword(password, hashed_password)
     ) {
         return { error: 'login_failed' }
@@ -284,6 +324,19 @@ const loginUser = async (email: string, password: string) => {
             expiresIn: 604800, // 1 week
         }
     )
+
+    if (activation_key) {
+        return {
+            id,
+            email,
+            token,
+            activation_key,
+            role,
+            created_at,
+            updated_at,
+        }
+    }
+
     const info = {
         hashed_password,
         token,
@@ -305,6 +358,8 @@ const loginUser = async (email: string, password: string) => {
         email,
         token,
         role,
+        created_at,
+        updated_at,
     }
 }
 
@@ -352,4 +407,5 @@ export {
     User,
     UserRequest,
     ErrorMap,
+    ModelErrorResponse,
 }

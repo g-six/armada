@@ -5,7 +5,6 @@ import {
     Receipient,
     TemplateOptions,
 } from '../utils/email-helper'
-import { FieldError } from '../utils/error-helper'
 
 const protocol: string =
     process.env.NODE_ENV === 'local' ? 'http' : 'https'
@@ -20,7 +19,7 @@ const create = async (req: Request, res: Response) => {
             password,
             user_type
         )
-        const { errors } = results as UserModel.ErrorMap
+        const { errors } = results as UserModel.ModelErrorResponse
 
         if (errors) {
             let email_error, password_error
