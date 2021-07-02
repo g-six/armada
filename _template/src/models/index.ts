@@ -24,6 +24,14 @@ type Filters = {
     created_by?: string
 }
 
+type ErrorMap = {
+    [key: string]: string
+}
+type ModelErrorResponse = {
+    error?: string
+    errors?: ErrorMap
+}
+
 const retrieveRecords = async (filters?: Filters) => {
     const docs = await retrieve(
         'hk = :hk and begins_with(sk, :sk)',
@@ -52,57 +60,74 @@ const retrieveRecords = async (filters?: Filters) => {
 }
 
 const createRecord = async (
-    name: string,
+    record: Record<string, string | number>,
     created_by: string
-): Promise<Model> => {
-    const existing = await getByName(name)
+): Promise<Model | ModelErrorResponse> => {
+    let errors: ErrorMap
+    if (!record.name) errors = {
+        name: '{{model}}_name_required'
+    }
+    if (errors) return { errors }
+    
+
+    const existing = await getByName(record.name as string)
     if (existing) {
-        throw new Error(`"${name}" already existing`)
+        if (!(existing as ModelErrorResponse).errors) {
+            return {
+                name: '{{model}}_exists',
+            } as ErrorMap
+        } else {
+            return existing as ModelErrorResponse
+        }
     }
 
     const id: string = generate()
-    const info = { name }
-    const record: Record = {
+    const { name } = record
+
+    const doc: Document = {
         hk: '{{model}}',
         sk: `{{model}}#${id}`,
-        hk2: `${created_by}#${id}`,
-        sk2: name,
-        info,
+        hk2: `user#${created_by}`,
+        sk2: name as string,
+        info: {
+            name,
+        },
     }
-    const doc = await create(record)
-    const {{model}} = {
-        id,
-        name: doc.sk2,
-        created_by: doc.sk.split('#')[1],
-        created_at: doc.created_at,
-        updated_at: doc.updated_at,
-    }
-    return {{model}}
+
+    const {{model}}: Document = await create(doc)
+    return normalize({{model}})
 }
 
 const updateRecord = async (
     id: string,
     updates: ModelInfo
-): Promise<Model> => {
+): Promise<Model | ModelErrorResponse> => {
     // Validate
+    let errors: ErrorMap
+
     if (!id) {
-        throw new Error('"{{model}} id" is required')
+        errors = {
+            id: '{{model}}_id_required',
+        }
     }
-
-    const errors = []
     if (!updates.name) {
-        errors.push({
-            name: '{{model}} name is required.',
-        })
+        errors = {
+            ...errors,
+            name: '{{model}}_name_required',
+        }
     }
 
-    if (errors.length > 0) {
-        throw new Error(JSON.stringify({ errors }, null, 4))
+    if (errors) {
+        return { errors }
     }
 
     const {{model}} = await getById(id)
 
     if (!{{model}}) {
+        errors = {
+            ...errors,
+            name: '{{model}}_id_invalid',
+        }
         throw new Error(`Invalid {{model}} id ${id}`)
     }
 
