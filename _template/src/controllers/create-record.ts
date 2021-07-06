@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { User } from '../models/user'
 import * as Model from '../models'
 
-const create = async (req: Request, res: Response) => {
+const create = async (req: Request, res: Response): void => {
     try {
         const { name } = req.body
         const user_id = (req.user as User).id

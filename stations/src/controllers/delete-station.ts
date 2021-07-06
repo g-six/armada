@@ -1,21 +1,24 @@
 import { Request, Response } from 'express'
 import { deleteStation } from '../models'
 
-const fn = async (req: Request, res: Response) => {
+const deleteRequest = async (req: Request, res: Response): Promise<Response> => {
     const { id: station_id } = req.params
-
+    let results: Record<string, string>
     try {
-        const docs = await deleteStation(station_id)
-
-        return res.status(200).json({
+        await deleteStation(station_id)
+        results = {
             message: `Successfully deleted ${station_id}`,
-        })
+        }
+
+        res.status(200).json(results)
     } catch (e) {
-        res.status(400).json({
+        results = {
             error: e.message,
             stack: e.stack.split('\n'),
-        })
+        }
+        res.status(400).json(results)
     }
+    return res
 }
 
-export default fn
+export default deleteRequest

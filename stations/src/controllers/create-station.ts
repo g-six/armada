@@ -1,7 +1,9 @@
 import { Request, Response } from 'express'
 import { User } from '../models/user'
 import * as Model from '../models'
-
+interface IDictionary<TValue> {
+    [id: string]: TValue;
+}
 const create = async (req: Request, res: Response) => {
     try {
         const { name, line } = req.body
@@ -13,20 +15,23 @@ const create = async (req: Request, res: Response) => {
         )
         const { errors } = doc as Model.ErrorMap
 
-        let results: Record<string, any> = {}
-        let status_code: number = 400
+        let results: IDictionary<Record<string, string> | string> = {}
+        let status_code = 400
         if (errors) {
-            results.errors = {}
+            const error_map: Record<string, string> = {}
             Object.keys(errors).forEach((key: string) => {
-                results.errors[key] = res.locals.translateError(
+                error_map[key] = res.locals.translateError(
                     errors[key]
                 )
             })
+            results = {
+                errors: error_map,
+            }
         } else {
             status_code = 200
             results = {
                 message: 'Record created.',
-                doc,
+                doc: doc as Record<string, string>,
             }
         }
         return res.status(status_code).json(results)

@@ -1,0 +1,61 @@
+Resources:
+  DDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: vacan-demo-db
+      AttributeDefinitions:
+        -
+          AttributeName: "hk"
+          AttributeType: "S"
+        -
+          AttributeName: "sk"
+          AttributeType: "S"
+        -
+          AttributeName: "hk2"
+          AttributeType: "S"
+        -
+          AttributeName: "sk2"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "hk"
+          KeyType: "HASH"
+        -
+          AttributeName: "sk"
+          KeyType: "RANGE"
+      GlobalSecondaryIndexes:
+        -
+          IndexName: "gsi1"
+          KeySchema:
+            -
+              AttributeName: "hk2"
+              KeyType: "HASH"
+            -
+              AttributeName: "sk"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 10
+            WriteCapacityUnits: 5
+        -
+          IndexName: "gsi2"
+          KeySchema:
+            -
+              AttributeName: "hk"
+              KeyType: "HASH"
+            -
+              AttributeName: "sk2"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 10
+            WriteCapacityUnits: 5
+      ProvisionedThroughput:
+        ReadCapacityUnits: 10
+        WriteCapacityUnits: 5
+      TimeToLiveSpecification:
+        AttributeName: "delete_at"
+        Enabled: true
+

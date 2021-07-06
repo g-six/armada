@@ -1,0 +1,64 @@
+module.exports = {
+    apps : [{
+        name: 'auth',
+        script: './auth/build/server.js',
+        watch: './auth/build',
+        env: {
+            "NODE_ENV": process.env.VACAN_ENV,
+            "PORT": process.env.AUTH_PORT,
+            "token": process.env.VACAN_TOKEN,
+            "region": process.env.VACAN_REGION,
+            "db": process.env.VACAN_DB,
+            "dbIndex1": process.env.VACAN_DB_IDX_1,
+            "dbIndex2": process.env.VACAN_DB_IDX_2
+        },
+        env_production: {
+            "db": "vacan-prod-database"
+        }
+    }, {
+        name: 'stations',
+        script: './stations/build/server.js',
+        watch: './stations/build',
+        env: {
+            "NODE_ENV": process.env.VACAN_ENV,
+            "PORT": process.env.STATIONS_PORT,
+            "token": process.env.VACAN_TOKEN,
+            "region": process.env.VACAN_REGION,
+            "db": process.env.VACAN_DB,
+            "dbIndex1": process.env.VACAN_DB_IDX_1,
+            "dbIndex2": process.env.VACAN_DB_IDX_2
+        },
+        env_production: {
+            "db": "vacan-prod-database"
+        }
+    }, {
+        name: 'toilets',
+        script: './toilets/build/server.js',
+        watch: './toilets/build',
+        env: {
+            "NODE_ENV": process.env.VACAN_ENV,
+            "PORT": process.env.TOILETS_PORT,
+            "token": process.env.VACAN_TOKEN,
+            "region": process.env.VACAN_REGION,
+            "db": process.env.VACAN_DB,
+            "dbIndex1": process.env.VACAN_DB_IDX_1,
+            "dbIndex2": process.env.VACAN_DB_IDX_2
+        },
+        env_production: {
+            "db": "vacan-prod-database"
+        }
+    }],
+
+    deploy : {
+        production : {
+            user : 'SSH_USERNAME',
+            host : 'SSH_HOSTMACHINE',
+            ref  : 'origin/master',
+            repo : 'GIT_REPOSITORY',
+            path : 'DESTINATION_PATH',
+            'pre-deploy-local': '',
+            'post-deploy' : 'npm install && pm2 reload ecosystem.config.js --env production',
+            'pre-setup': ''
+        }
+    }
+};

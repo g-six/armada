@@ -8,10 +8,13 @@
         "commitizen": "^4.2.4",
         "cz-conventional-changelog": "^3.3.0",
         "eslint": "^7.29.0",
+        "eslint-config-prettier": "^8.3.0",
+        "eslint-plugin-prettier": "^3.4.0",
         "fs-extra": "^10.0.0",
         "handlebars": "^4.7.7",
         "husky": "^6.0.0",
         "nodemon": "^2.0.9",
+        "pm2": "^5.1.0",
         "prettier": "^2.3.2",
         "ts-loader": "^9.2.3",
         "ts-node": "^10.0.0",
@@ -32,6 +35,8 @@
         "dev": "nodemon --config nodemon.json server.ts",
         "create-armada-svc": "ts-node generate.ts",
         "cas": "npm run create-armada-svc",
-        "format": "prettier --config .prettierrc ./**/src/**/*.ts --write"
+        "format": "prettier --config .prettierrc ./**/src/**/*.ts --write",
+        "lint": "eslint ./**/src/**/*.ts",
+        "lint-watch": "npm run lint --watch"
     }
 }

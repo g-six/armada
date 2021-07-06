@@ -42,9 +42,9 @@ const activateUser = async (key: string, id: string) => {
     const user = await getById(id)
 
     if (!user || user.activation_key != key) {
-        throw new Error(
-            `Activation parameters invalid ${key} ${id}`
-        )
+        return {
+            error: 'activation_params_invalid'
+        }
     }
     const token = jwt.sign({ id }, process.env.token, {
         expiresIn: 604800, // 1 week
@@ -74,7 +74,7 @@ const createUser = async (
     email: string,
     password: string,
     role = 'admin'
-): Promise<User | ModelErrorResponse> => {
+) => {
     const existing = await getByEmail(email)
     let errors: { [key: string]: string }
     if (existing) {
@@ -182,15 +182,6 @@ const getById = async (id: string) => {
         throw new Error('"id" is required')
     }
 
-    // Query
-    const params = {
-        TableName: process.env.db,
-        KeyConditionExpression: 'hk = :hk and sk = :sk',
-        ExpressionAttributeValues: {
-            ':hk': 'user',
-            ':sk': `u#${id}`,
-        },
-    }
     const { Items } = await retrieve('hk = :hk and sk = :sk', {
         ':hk': 'user',
         ':sk': `u#${id}`,
@@ -241,15 +232,6 @@ const getByIdAndToken = async (id: string, token: string) => {
         throw new Error('"token" is required')
     }
 
-    // Query
-    const params = {
-        TableName: process.env.db,
-        KeyConditionExpression: 'hk = :hk and sk = :sk',
-        ExpressionAttributeValues: {
-            ':hk': 'user',
-            ':sk': `u#${id}`,
-        },
-    }
     const { Items } = await retrieve('hk = :hk and sk = :sk', {
         ':hk': 'user',
         ':sk': `u#${id}`,

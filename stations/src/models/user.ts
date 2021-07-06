@@ -21,21 +21,12 @@ interface UserRequest extends Request {
  * @param id DynamoDB hash key (primary key)
  * @returns User document
  */
-const getById = async (id: string) => {
+const getById = async (id: string): Promise<Record<string, string | number>> => {
     // Validate
     if (id === undefined || !id) {
-        throw new Error('"id" is required')
+        return { error: 'user_not_found' }
     }
 
-    // Query
-    const params = {
-        TableName: process.env.db,
-        KeyConditionExpression: 'hk = :hk and sk = :sk',
-        ExpressionAttributeValues: {
-            ':hk': 'user',
-            ':sk': `u#${id}`,
-        },
-    }
     const [doc] = await retrieve('hk = :hk and sk = :sk', {
         ':hk': 'user',
         ':sk': `u#${id}`,
@@ -54,13 +45,13 @@ const getById = async (id: string) => {
     return user
 }
 
-const getByIdAndToken = async (id: string, token: string) => {
+const getByIdAndToken = async (id: string, token: string): Promise<Record<string, string>> => {
     // Validate
     if (id === undefined || !id) {
-        throw new Error('"id" is required')
+        return { error: 'id_required' }
     }
     if (token === undefined || !token) {
-        throw new Error('"token" is required')
+        return { error: 'token_required' }
     }
 
     // Query
@@ -77,7 +68,7 @@ const getByIdAndToken = async (id: string, token: string) => {
         }
     }
 
-    return false
+    return { error: 'user_not_found' }
 }
 
 export { getById, getByIdAndToken, User, UserRequest }

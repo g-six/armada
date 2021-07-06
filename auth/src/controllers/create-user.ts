@@ -11,6 +11,7 @@ const protocol: string =
 
 const create = async (req: Request, res: Response) => {
     let user: UserModel.User
+    let response: Record<string, string | Record<string, string | Record<string, string>>> = {}
 
     try {
         const { email, password, user_type } = req.body
@@ -20,7 +21,6 @@ const create = async (req: Request, res: Response) => {
             user_type
         )
         const { errors } = results as UserModel.ModelErrorResponse
-
         if (errors) {
             let email_error, password_error
             if (errors.email)
@@ -37,22 +37,24 @@ const create = async (req: Request, res: Response) => {
                         errors.password
                     ),
                 }
-            return res.status(400).json({
+            response = {
                 errors: {
                     email: email_error,
                     password: password_error,
                 },
-            })
+            }
+            res.status(400).json(response)
         }
 
         user = results as UserModel.User
-        if (!user) throw new Error('Unable to create user')
+        
+        if (!user) res.status(400).json({ error: 'create_user_failed' })
     } catch (error) {
-        return res.status(400).json({
-            tried: 'Users.register',
+        response = {
             error: error.message,
             stack: error.stack,
-        })
+        }
+        res.status(400).json(response)
     }
 
     const { id, email, activation_key, name, role } = user
@@ -85,8 +87,7 @@ const create = async (req: Request, res: Response) => {
         }
 
         const rs = await sendTemplate(template_opts)
-
-        return res.status(200).json({
+        res.status(200).json({
             message:
                 'Sign up successful.  Please activate your account.',
             rs,
@@ -96,9 +97,8 @@ const create = async (req: Request, res: Response) => {
             },
         })
     } catch (error) {
-        return res
-            .status(400)
-            .json({ error: error.message, stack: error.stack })
+        response = { error: error.message, stack: error.stack }
+        res.status(400).json(response)
     }
 }
 

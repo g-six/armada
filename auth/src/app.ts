@@ -20,7 +20,7 @@ type func = (
     req: express.Request | UserRequest,
     res: express.Response,
     next?: express.NextFunction
-) => Promise<express.Response<any, Record<string, NestedData>>>
+) => Promise<express.Response<any, Record<string, NestedData>> | void>
 // Enable CORS
 app.use(
     (
@@ -158,24 +158,3 @@ app.use(
 )
 
 module.exports = app
-/*
-// Reason behind the exports above instead of the below
-export default app // This causes error in serverless
-{
-    "errorType": "Error",
-    "errorMessage": "Unsupported framework",
-    "stack": [
-        "Error: Unsupported framework",
-        "    at getFramework (/var/task/_express/node_modules/serverless-http/lib/framework/get-framework.js:69:9)",
-        "    at module.exports (/var/task/_express/node_modules/serverless-http/serverless-http.js:14:21)",
-        "    at Object.<anonymous> (/var/task/_express/handler.js:47:16)",
-        "    at Module._compile (internal/modules/cjs/loader.js:999:30)",
-        "    at Object.Module._extensions..js (internal/modules/cjs/loader.js:1027:10)",
-        "    at Module.load (internal/modules/cjs/loader.js:863:32)",
-        "    at Function.Module._load (internal/modules/cjs/loader.js:708:14)",
-        "    at Module.require (internal/modules/cjs/loader.js:887:19)",
-        "    at require (internal/modules/cjs/helpers.js:74:18)",
-        "    at Runtime.exports.handler (/var/task/_serverless/handler.js:33:20)"
-    ]
-}
- */

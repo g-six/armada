@@ -5,7 +5,9 @@ import { readdirSync, readFileSync } from 'fs-extra'
 
 import configurePassport, { ExtractJWT } from './config/passport'
 import create from './controllers/create-station'
-import retrieveStations from './controllers/retrieve-stations'
+import retrieveStations, {
+    getStation,
+} from './controllers/retrieve-stations'
 import update from './controllers/update-station'
 import deleteStation from './controllers/delete-station'
 
@@ -143,6 +145,12 @@ app.get(
     asyncHandler(tokenValidationHandler),
     passport.authenticate('jwt', { session: false }),
     asyncHandler(retrieveStations)
+)
+app.get(
+    '/station/:id',
+    asyncHandler(tokenValidationHandler),
+    passport.authenticate('jwt', { session: false }),
+    asyncHandler(getStation)
 )
 app.put(
     '/station/:id',

@@ -18,11 +18,6 @@ if (process.env.NODE_ENV == 'local') {
 const dynamodb = new DynamoDB.DocumentClient(dbopts)
 const TableName: string = process.env.db as string
 
-interface Props {
-    putOutput?: DynamoDB.DocumentClient.PutItemInput
-    batchWriteOutput: DynamoDB.DocumentClient.BatchWriteItemOutput
-}
-
 interface Person {
     name?: string
     hashed_password: string
@@ -31,7 +26,7 @@ interface Person {
 interface Station {
     name: string
 }
-interface Record {
+interface Document {
     hk: string
     sk: string
     hk2: string
@@ -49,16 +44,11 @@ type KeyType = {
     sk: string
 }
 
-type RecordIdentifier = {
-    id: string
-    model: string
-}
-
 type ExpressionAttributeValuesType = {
     [key: string]: string | number | Person | Station
 }
 
-const create = async (record: Record): Promise<Record> => {
+const create = async (record: Document): Promise<Document> => {
     const now = Math.round(Date.now() / 1000)
     const Item = {
         created_at: now,
@@ -176,6 +166,6 @@ export {
     deleteItemAt,
     getById,
     deleteItem,
-    Record,
+    Document,
     Person,
 }

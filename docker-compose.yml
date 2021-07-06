@@ -29,12 +29,29 @@ services:
             - "8302:8002"
         command: bash -c "npm install && npm run dev"
 
+    toilets:
+        container_name: toilets-api
+        image: node:14
+        volumes:
+        - "./facilities:/src"
+        working_dir: '/src'
+        depends_on:
+            - auth
+            - stations
+        env_file:
+            - .env
+            - './facilities/.env'
+        ports:
+            - "8303:8003"
+        command: bash -c "npm install && npm run dev"
+
     nginx:
         container_name: webserver
         image: nginx:1.21.0-alpine
         depends_on:
             - auth
             - stations
+            - toilets
         volumes:
             - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
         ports:

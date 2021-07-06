@@ -4,7 +4,7 @@ import {
     create,
     update,
     retrieve,
-    Record,
+    Document,
     deleteItemAt,
 } from '../utils/dynamodb'
 
@@ -18,7 +18,7 @@ enum SoapStatus {
     NORMAL = 'NORMAL',
 }
 
-enum FacilityAlert {
+enum ToiletAlert {
     OVERSTAY = 'OVERSTAY',
     CONTAMINATED = 'CONTAMINATION',
     SENSOR_UNRESPONSIVE = 'SENSOR_UNRESPONSIVE',
@@ -34,21 +34,13 @@ interface NewStationRequest {
 
 interface Station extends NewStationRequest {
     id: string
-    paper: PaperStatus
-    soap: SoapStatus
-    facility_alert?: FacilityAlert
+    paper?: PaperStatus
+    soap?: SoapStatus
+    alert?: ToiletAlert
+    toilets?: Record<string, string | number>[]
     created_by?: string
     created_at?: number
     updated_at?: number
-}
-
-type StationInfo = {
-    name: string
-}
-
-type StationFilters = {
-    name?: string
-    created_by?: string
 }
 
 export type ErrorList = {
@@ -72,25 +64,84 @@ export type ErrorMap = {
     }
 }
 
-const retrieveStations = async (filters?: StationFilters) => {
+const retrieveStations = async () => {
     const docs: DynamoDB.DocumentClient.ItemList = await retrieve(
         'hk = :hk and begins_with(sk, :sk)',
         {
-            ':hk': 'station',
+            ':hk': 'm_station',
             ':sk': 'station#',
         }
     )
 
+    // Collate toilets for this station
+    const toilet_docs: DynamoDB.DocumentClient.ItemList =
+        await retrieve('hk = :hk and begins_with(sk, :sk)', {
+            ':hk': 'm_toilet',
+            ':sk': 'toilet#',
+        })
+    const toilets: Record<
+        string,
+        Record<string, string | number>[]
+    > = {}
+    toilet_docs.forEach((toilet: Document) => {
+        const [, station_id, toilet_name] = toilet.sk2.split('#')
+        const station_toilets = toilets[station_id]
+        if (!station_toilets) {
+            toilets[station_id] = []
+        }
+        toilets[toilet.sk2.split('#')[1]].push({
+            ...toilet.info,
+            id: toilet.hk2,
+            name: toilet_name,
+        })
+    })
+
     const stations: Station[] = []
-    docs.map((doc: Record) => {
+    docs.map((doc: Document) => {
         if (!doc.delete_at) {
-            stations.push(normalize(doc as Record) as Station)
+            const station = normalize(doc as Document) as Station
+            station.toilets = toilets[station.id]
+            stations.push(station)
         } else {
             console.log(doc)
         }
     })
 
     return stations
+}
+
+const retrieveToilets = async (id: string) => {
+    const toilet_docs: DynamoDB.DocumentClient.ItemList =
+        await retrieve('hk = :hk and begins_with(sk, :sk)', {
+            ':hk': 'm_toilet',
+            ':sk': 'toilet#',
+        })
+    const toilets: Record<string, string>[] = []
+    toilet_docs.forEach((toilet: Document) => {
+        const [, station_id, toilet_name] = toilet.sk2.split('#')
+
+        if (station_id == id) {
+            toilets.push({
+                ...toilet.info,
+                id: toilet.hk2,
+                name: toilet_name,
+            })
+        }
+    })
+
+    return toilets
+}
+
+const retrieveStation = async (id: string) => {
+    const doc = await getById(id)
+
+    if (!doc)
+        return {
+            error: 'station_does_not_exist',
+        }
+    doc.toilets = await retrieveToilets(id)
+
+    return doc
 }
 
 const createStation = async (
@@ -132,8 +183,8 @@ const createStation = async (
         created_by,
     }
 
-    const record: Record = {
-        hk: 'station',
+    const record: Document = {
+        hk: 'm_station',
         sk: `station#${id}`,
         hk2: `user#${created_by}`,
         sk2: `${name}#${line}`,
@@ -150,44 +201,68 @@ const createStation = async (
 
 const updateStation = async (
     id: string,
-    updates: StationInfo
-): Promise<Station> => {
+    updates: Record<string, string | Record<string, string>>
+): Promise<Record<string, string> | Station> => {
     // Validate
     if (!id) {
-        throw new Error('"Station id" is required')
-    }
-
-    const errors = []
-    if (!updates.name) {
-        errors.push({
-            name: 'Station name is required.',
-        })
-    }
-
-    if (errors.length > 0) {
-        throw new Error(JSON.stringify({ errors }, null, 4))
+        return {
+            error: 'station_id_required',
+        }
     }
 
     const station = await getById(id)
 
     if (!station) {
-        throw new Error(`Invalid station id ${id}`)
+        return { error: 'station_does_not_exist' }
     }
 
-    const info: StationInfo = updates
+    if (!updates.name && !updates.line) {
+        return {
+            name: 'no_updates_provided',
+        }
+    }
 
-    await update(
-        {
-            hk: 'station',
-            sk: `station#${id}`,
-        },
-        {
-            ':i': info,
-        },
-        ['info = :i']
-    )
+    const { name: updated_name, line: updated_line } = updates
+    const updated_sk2 = [
+        station.name as string,
+        station.line as string,
+    ]
 
-    return { ...station, id, ...info }
+    const update_assignments = []
+    let update_values = {}
+
+    if (updated_name) {
+        updated_sk2[0] = updated_name as string
+        station.name = updated_name as string
+    }
+
+    if (updated_line) {
+        updated_sk2[1] = updated_line as string
+        station.line = updated_line as string
+    }
+
+    update_values = {
+        ...update_values,
+        ':sk2': updated_sk2.join('#'),
+    }
+    update_assignments.push('sk2 = :sk2')
+
+    console.log(update_values)
+
+    try {
+        await update(
+            {
+                hk: 'm_station',
+                sk: `station#${id}`,
+            },
+            update_values,
+            update_assignments
+        )
+    } catch (e) {
+        return { error: e.message, stack: e.stack }
+    }
+
+    return station as unknown as Station
 }
 
 /**
@@ -212,11 +287,11 @@ const getByName = async (name: string, line: string) => {
 
     const [doc] = await retrieve(
         'hk = :hk and sk2 = :sk2',
-        { ':hk': 'station', ':sk2': `${name}#${line}` },
+        { ':hk': 'm_station', ':sk2': `${name}#${line}` },
         process.env.dbIndex2
     )
 
-    return normalize(doc as Record)
+    return normalize(doc as Document)
 }
 
 /**
@@ -224,36 +299,46 @@ const getByName = async (name: string, line: string) => {
  * @param id DynamoDB hash key (primary key)
  * @returns User document
  */
-const getById = async (id: string) => {
+const getById = async (id: string): Promise<Station> => {
     // Validate
     if (id === undefined || !id) {
         throw new Error('"id" is required')
     }
 
     const [doc] = await retrieve('hk = :hk and sk = :sk', {
-        ':hk': 'station',
+        ':hk': 'm_station',
         ':sk': `station#${id}`,
     })
 
-    return normalize(doc as Record)
+    return normalize(doc as Document) as Station
 }
 
-const deleteStation = async (id: string) => {
-    return await deleteItemAt('station', id)
+const deleteStation = async (id: string): Promise<void> => {
+    await deleteItemAt('m_station', id)
 }
 
-const normalize = (doc: Record): Station | void => {
-    console.log(doc)
+const normalize = (doc: Document): Station | void => {
     if (doc) {
         const [name, line] = doc.sk2.split('#')
+        const [,created_by] = doc.hk2.split('#')
+        let info: Record<string, string | boolean> = {
+            paper: null,
+            soap: null,
+            is_controlled: false,
+        }
+        if (doc.info) {
+            info = {
+                paper: doc.info.paper as PaperStatus,
+                soap: doc.info.soap as SoapStatus,
+                is_controlled: doc.info.is_controlled as boolean,
+            }
+        }
         return {
+            ...info,
             id: doc.sk.split('#')[1],
             name,
             line,
-            paper: doc.info.paper as PaperStatus,
-            soap: doc.info.soap as SoapStatus,
-            is_controlled: doc.info.is_controlled as boolean,
-            created_by: doc.info.created_by as string,
+            created_by,
             created_at: doc.created_at,
             updated_at: doc.updated_at,
         }
@@ -263,6 +348,7 @@ const normalize = (doc: Record): Station | void => {
 export {
     createStation,
     retrieveStations,
+    retrieveStation,
     updateStation,
     deleteStation,
     getById,

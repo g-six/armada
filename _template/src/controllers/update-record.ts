@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { updateRecord } from '../models'
 
-const update = async (req: Request, res: Response) => {
+const update = async (req: Request, res: Response): void => {
     const id: string = decodeURIComponent(req.params.id as string)
 
     try {

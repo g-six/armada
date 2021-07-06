@@ -25,6 +25,7 @@
         "@types/shortid": "^0.0.29",
         "aws-sdk": "^2.937.0",
         "nodemon": "^2.0.9",
+        "pm2": "^5.1.0",
         "rimraf": "^3.0.2",
         "serverless-hooks": "^1.0.0",
         "serverless-plugin-typescript": "^1.1.5",
@@ -42,7 +43,7 @@
         "dev": "nodemon --config nodemon.json server.ts",
         "dev:debug": "nodemon --config nodemon.json --inspect-brk src/index.ts",
         "build": "rimraf ./build && tsc",
-        "postbuild": "cp package*.json build/ && cp -r src/locales build && npm i --only=prod --prefix=build",
+        "postbuild": "cp package*.json build/ && cp -r src/locales build/ && npm i --only=prod --prefix=build",
         "format": "prettier --config .prettierrc 'src/**/*.ts' --write",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
