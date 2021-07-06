@@ -133,38 +133,38 @@ app.options('*', (req: express.Request, res: express.Response) => {
 })
 
 // Routes
-app.post(
-    '/stations',
-    asyncHandler(tokenValidationHandler),
-    passport.authenticate('jwt', { session: false }),
-    getLocales,
-    asyncHandler(create)
-)
 app.get(
-    '/stations',
-    asyncHandler(tokenValidationHandler),
-    passport.authenticate('jwt', { session: false }),
-    asyncHandler(retrieveStations)
-)
-app.get(
-    '/station/:id',
+    '/d/:id',
     asyncHandler(tokenValidationHandler),
     passport.authenticate('jwt', { session: false }),
     asyncHandler(getStation)
 )
 app.put(
-    '/station/:id',
+    '/d/:id',
     asyncHandler(tokenValidationHandler),
     passport.authenticate('jwt', { session: false }),
     getLocales,
     asyncHandler(update)
 )
 app.delete(
-    '/station/:id',
+    '/d/:id',
     asyncHandler(tokenValidationHandler),
     passport.authenticate('jwt', { session: false }),
     getLocales,
     asyncHandler(deleteStation)
+)
+app.post(
+    '/new',
+    asyncHandler(tokenValidationHandler),
+    passport.authenticate('jwt', { session: false }),
+    getLocales,
+    asyncHandler(create)
+)
+app.get(
+    '/all',
+    asyncHandler(tokenValidationHandler),
+    passport.authenticate('jwt', { session: false }),
+    asyncHandler(retrieveStations)
 )
 app.get('/*', (req, res) => {
     res.send(`Request received: ${req.method} - ${req.path}`)
