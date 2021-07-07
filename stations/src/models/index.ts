@@ -201,7 +201,10 @@ const createStation = async (
 
 const updateStation = async (
     id: string,
-    updates: Record<string, string | Record<string, string>>
+    updates: Record<
+        string,
+        string | boolean | Record<string, string>
+    >
 ): Promise<Record<string, string> | Station> => {
     // Validate
     if (!id) {
@@ -216,13 +219,17 @@ const updateStation = async (
         return { error: 'station_does_not_exist' }
     }
 
-    if (!updates.name && !updates.line) {
+    if (!updates.name && !updates.line && !updates.is_controlled) {
         return {
             name: 'no_updates_provided',
         }
     }
 
-    const { name: updated_name, line: updated_line } = updates
+    const {
+        name: updated_name,
+        line: updated_line,
+        is_controlled,
+    } = updates
     const updated_sk2 = [
         station.name as string,
         station.line as string,
@@ -241,13 +248,29 @@ const updateStation = async (
         station.line = updated_line as string
     }
 
+    let info
+    if (is_controlled) {
+        const { toilets, paper, soap, alert, created_by } = station
+        info = {
+            alert,
+            created_by,
+            is_controlled: is_controlled === 'true',
+            paper,
+            soap,
+            toilets,
+        }
+        update_values = {
+            ...update_values,
+            ':i': info,
+        }
+        update_assignments.push('info = :i')
+    }
+
     update_values = {
         ...update_values,
         ':sk2': updated_sk2.join('#'),
     }
     update_assignments.push('sk2 = :sk2')
-
-    console.log(update_values)
 
     try {
         await update(
@@ -262,7 +285,7 @@ const updateStation = async (
         return { error: e.message, stack: e.stack }
     }
 
-    return station as unknown as Station
+    return { ...station, ...info } as unknown as Station
 }
 
 /**
@@ -320,7 +343,7 @@ const deleteStation = async (id: string): Promise<void> => {
 const normalize = (doc: Document): Station | void => {
     if (doc) {
         const [name, line] = doc.sk2.split('#')
-        const [,created_by] = doc.hk2.split('#')
+        const [, created_by] = doc.hk2.split('#')
         let info: Record<string, string | boolean> = {
             paper: null,
             soap: null,

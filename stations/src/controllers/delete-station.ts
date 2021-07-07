@@ -1,7 +1,10 @@
 import { Request, Response } from 'express'
 import { deleteStation } from '../models'
 
-const deleteRequest = async (req: Request, res: Response): Promise<Response> => {
+const deleteRequest = async (
+    req: Request,
+    res: Response
+): Promise<Response> => {
     const { id: station_id } = req.params
     let results: Record<string, string>
     try {

@@ -21,7 +21,9 @@ interface UserRequest extends Request {
  * @param id DynamoDB hash key (primary key)
  * @returns User document
  */
-const getById = async (id: string): Promise<Record<string, string | number>> => {
+const getById = async (
+    id: string
+): Promise<Record<string, string | number>> => {
     // Validate
     if (id === undefined || !id) {
         return { error: 'user_not_found' }
@@ -31,6 +33,10 @@ const getById = async (id: string): Promise<Record<string, string | number>> => 
         ':hk': 'user',
         ':sk': `u#${id}`,
     })
+
+    if (!doc) {
+        return { error: 'user_not_found' }
+    }
 
     const [role, user_id] = doc.sk.split('#')
     const user = {
@@ -45,7 +51,10 @@ const getById = async (id: string): Promise<Record<string, string | number>> => 
     return user
 }
 
-const getByIdAndToken = async (id: string, token: string): Promise<Record<string, string>> => {
+const getByIdAndToken = async (
+    id: string,
+    token: string
+): Promise<Record<string, string>> => {
     // Validate
     if (id === undefined || !id) {
         return { error: 'id_required' }

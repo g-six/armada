@@ -7,6 +7,7 @@ import configurePassport, { ExtractJWT } from './config/passport'
 import activate from './controllers/activate'
 import create from './controllers/create-user'
 import login from './controllers/login'
+import refreshToken from './controllers/refresh-token'
 import logout from './controllers/logout'
 import me from './controllers/me'
 import { getByIdAndToken, UserRequest } from './models/user'
@@ -29,8 +30,8 @@ app.use(
         next: express.NextFunction
     ) => {
         res.header('Access-Control-Allow-Origin', '*')
-        res.header('Access-Control-Allow-Methods', '*')
-        res.header('Access-Control-Allow-Headers', '*')
+        res.header('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, PUT, DELETE, PATCH')
+        res.header('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, X-Requested-With')
         res.header('x-powered-by', 'apiarmada')
         next()
     }
@@ -130,6 +131,7 @@ app.options('*', (req: express.Request, res: express.Response) => {
 })
 app.post('/login', getLocales, asyncHandler(login))
 app.post('/signup', getLocales, asyncHandler(create))
+app.put('/refresh-token', getLocales, asyncHandler(refreshToken))
 app.get('/activate', asyncHandler(activate))
 app.get(
     '/me',

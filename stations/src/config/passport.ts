@@ -50,7 +50,7 @@ export default (passport: PassportStatic): void => {
                 })
             }
 
-            if (!user) {
+            if (!user || !user.token) {
                 return done(null, false, {
                     message: 'invalid session',
                 })

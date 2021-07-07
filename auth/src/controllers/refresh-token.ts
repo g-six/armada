@@ -1,11 +1,15 @@
 import { Request, Response } from 'express'
-import { loginUser, ModelErrorResponse, User } from '../models/user'
+import {
+    refreshToken,
+    ModelErrorResponse,
+    User,
+} from '../models/user'
 
-const login = async (req: Request, res: Response) => {
-    const { email, password } = req.body
+const fn = async (req: Request, res: Response) => {
+    const { id, refresh_token } = req.body
 
     try {
-        const results = await loginUser(email, password)
+        const results = await refreshToken(id, refresh_token)
 
         if ((results as ModelErrorResponse).error) {
             const model_error = results as ModelErrorResponse
@@ -52,7 +56,7 @@ const login = async (req: Request, res: Response) => {
         }
 
         return res.status(200).json({
-            message: 'Successfully logged in',
+            message: 'Token refreshed',
             doc: user,
         })
     } catch (e) {
@@ -65,4 +69,4 @@ const login = async (req: Request, res: Response) => {
     }
 }
 
-export default login
+export default fn

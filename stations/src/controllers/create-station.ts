@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { User } from '../models/user'
 import * as Model from '../models'
 interface IDictionary<TValue> {
-    [id: string]: TValue;
+    [id: string]: TValue
 }
 const create = async (req: Request, res: Response) => {
     try {
@@ -15,7 +15,8 @@ const create = async (req: Request, res: Response) => {
         )
         const { errors } = doc as Model.ErrorMap
 
-        let results: IDictionary<Record<string, string> | string> = {}
+        let results: IDictionary<Record<string, string> | string> =
+            {}
         let status_code = 400
         if (errors) {
             const error_map: Record<string, string> = {}

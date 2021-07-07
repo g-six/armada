@@ -16,6 +16,8 @@ type User = {
     activation_key?: string
     expires_at?: number
     hashed_password?: string
+    refresh_token?: string
+    hashed_refresh_token?: string
     logged_in_at?: number
     name?: string
     token?: string
@@ -43,7 +45,7 @@ const activateUser = async (key: string, id: string) => {
 
     if (!user || user.activation_key != key) {
         return {
-            error: 'activation_params_invalid'
+            error: 'activation_params_invalid',
         }
     }
     const token = jwt.sign({ id }, process.env.token, {
@@ -203,13 +205,19 @@ const normalizeDoc = (
         info,
     } = docs[0]
     const [role, id] = hk2.split('#')
-    const { hashed_password, activation_key, token } = info
+    const {
+        hashed_password,
+        hashed_refresh_token,
+        activation_key,
+        token,
+    } = info
 
     return {
         id,
         email,
         role,
         hashed_password,
+        hashed_refresh_token,
         activation_key,
         created_at,
         updated_at,
@@ -257,19 +265,12 @@ const loginUser = async (
 
     if (!email) {
         errors = { email: 'email_required' }
-    } else if (!validateEmailAddress(email)) {
-        errors = { email: 'email_invalid' }
     }
 
     if (!password) {
         errors = {
             ...errors,
             password: 'password_required',
-        }
-    } else if (password.length < 8 || password.length > 20) {
-        errors = {
-            ...errors,
-            password: 'password_length_error',
         }
     }
 
@@ -307,12 +308,15 @@ const loginUser = async (
         }
     )
 
+    const refresh_token = `${hashPassword(email)}.${generate()}`
+
     if (activation_key) {
         return {
             id,
             email,
             token,
             activation_key,
+            refresh_token,
             role,
             created_at,
             updated_at,
@@ -321,6 +325,7 @@ const loginUser = async (
 
     const info = {
         hashed_password,
+        hashed_refresh_token: hashPassword(refresh_token),
         token,
     }
 
@@ -339,6 +344,93 @@ const loginUser = async (
         id,
         email,
         token,
+        refresh_token,
+        role,
+        created_at,
+        updated_at,
+    }
+}
+
+const refreshToken = async (
+    id: string,
+    req_refresh_token: string
+): Promise<User | ModelErrorResponse> => {
+    let errors: ErrorMap
+
+    if (!req_refresh_token) {
+        errors = errors || {}
+        errors = {
+            refresh_token: 'refresh_token_required',
+        }
+    }
+
+    if (!id) {
+        errors = errors || {}
+        errors = {
+            ...errors,
+            id: 'user_id_required',
+        }
+    }
+
+    if (errors) {
+        return { errors, error: 'refresh_token_failed' }
+    }
+
+    const user = await getById(id)
+    if (!user) {
+        return { error: 'refresh_token_failed no user' }
+    }
+
+    const {
+        email,
+        hashed_password,
+        hashed_refresh_token,
+        role,
+        updated_at,
+        created_at,
+    } = user
+
+    if (
+        !user.id ||
+        !hashed_refresh_token ||
+        !comparePassword(req_refresh_token, hashed_refresh_token)
+    ) {
+        return {
+            error: 'refresh_token_failed' + ' ' + req_refresh_token,
+        }
+    }
+
+    const token = jwt.sign(
+        { id, session_created_at: new Date().getTime() },
+        process.env.token,
+        {
+            expiresIn: 604800, // 1 week
+        }
+    )
+
+    const refresh_token = `${hashPassword(email)}.${generate()}`
+    const info = {
+        hashed_password,
+        hashed_refresh_token: hashPassword(refresh_token),
+        token,
+    }
+
+    await update(
+        {
+            hk: 'user',
+            sk: `u#${id}`,
+        },
+        {
+            ':i': info,
+        },
+        ['info = :i']
+    )
+
+    return {
+        id,
+        email,
+        token,
+        refresh_token,
         role,
         created_at,
         updated_at,
@@ -386,6 +478,7 @@ export {
     getByIdAndToken,
     loginUser,
     logoutUser,
+    refreshToken,
     User,
     UserRequest,
     ErrorMap,

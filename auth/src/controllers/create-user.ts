@@ -11,7 +11,10 @@ const protocol: string =
 
 const create = async (req: Request, res: Response) => {
     let user: UserModel.User
-    let response: Record<string, string | Record<string, string | Record<string, string>>> = {}
+    let response: Record<
+        string,
+        string | Record<string, string | Record<string, string>>
+    > = {}
 
     try {
         const { email, password, user_type } = req.body
@@ -47,8 +50,9 @@ const create = async (req: Request, res: Response) => {
         }
 
         user = results as UserModel.User
-        
-        if (!user) res.status(400).json({ error: 'create_user_failed' })
+
+        if (!user)
+            res.status(400).json({ error: 'create_user_failed' })
     } catch (error) {
         response = {
             error: error.message,
