@@ -28,8 +28,8 @@ app.use(
         next: express.NextFunction
     ) => {
         res.header('Access-Control-Allow-Origin', '*')
-        res.header('Access-Control-Allow-Methods', '*')
-        res.header('Access-Control-Allow-Headers', '*')
+        res.header('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, PUT, PATCH, DELETE')
+        res.header('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, X-Requested-With')
         res.header('x-powered-by', 'apiarmada')
         next()
     }
