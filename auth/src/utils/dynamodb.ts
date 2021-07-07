@@ -70,7 +70,7 @@ type ExpressionAttributeValuesType = {
 }
 
 const create = async (record: Record): Promise<Record> => {
-    const now = Date.now()
+    const now = Math.round(Date.now() / 1000)
     const Item = {
         created_at: now,
         updated_at: now,

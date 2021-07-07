@@ -108,7 +108,7 @@ const createUser = async (
     const user_sort_key: string = generate()
     const activation_key = `ak.${generate()}`
     const hashed_password = hashPassword(password)
-    const now = new Date().getTime()
+    const now = Math.round(Date.now() / 1000)
     const info = {
         activation_key,
         hashed_password,
