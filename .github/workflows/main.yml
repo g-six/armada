@@ -33,5 +33,5 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - run: cd auth && npm i && npm run build && aws s3 sync ./build s3://armada-artifacts-jp/${{ github.repository }}/${{ github.sha }}/auth
-      - run: cd stations && npm i && npm run build && aws s3 sync ./build s3://armada-artifacts-jp/${{ github.repository }}/${{ github.sha }}/stations
+      - run: cd auth && npm i && npm run build && aws s3 sync ./build s3://${{ secrets.ARTIFACTS_BUCKET }}/${{ github.repository }}/${{ github.sha }}/auth
+      - run: cd stations && npm i && npm run build && aws s3 sync ./build s3://${{ secrets.ARTIFACTS_BUCKET }}/${{ github.repository }}/${{ github.sha }}/stations
