@@ -27,3 +27,13 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run deploy -- --stage int
+      env:
+        ARMADA_CUSTOM_DOMAIN: ${{ secrets.ARMADA_CUSTOM_DOMAIN }}
+        ARMADA_API_GATEWAY_DOMAIN: ${{ secrets.ARMADA_API_GATEWAY_DOMAIN }}
+        ARMADA_HOSTED_ZONE_ID: ${{ secrets.ARMADA_HOSTED_ZONE_ID }}
+        ARMADA_COGNITO_POOL_ID: ${{ secrets.ARMADA_COGNITO_POOL_ID }}
+        ARMADA_COGNITO_CLIENT_ID: ${{ secrets.ARMADA_COGNITO_CLIENT_ID }}
+        ARMADA_COGNITO_CLIENT_SECRET: ${{ secrets.ARMADA_COGNITO_CLIENT_SECRET }}
+        ARMADA_ACCESS_KEY_ID: ${{ secrets.ARMADA_ACCESS_KEY_ID }}
+        ARMADA_SECRET_ACCESS_KEY: ${{ secrets.ARMADA_SECRET_ACCESS_KEY }}
+        ARMADA_SENDGRID_API_KEY: ${{ secrets.ARMADA_SENDGRID_API_KEY }}
