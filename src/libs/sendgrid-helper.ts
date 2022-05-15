@@ -30,6 +30,10 @@ export async function sendTemplate(
                 }],
                 template_id,
                 subject,
+                asm: {
+                    group_id: 21769,
+                    groups_to_display: [21769],
+                }
             },
             headers: {
                 subject,
