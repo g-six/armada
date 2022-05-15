@@ -10,7 +10,7 @@
     "console": "sst console -- --stage dev",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "lint": "eslint --ignore-path .gitignore --ext .ts ./src --fix"
+    "lint": "eslint --ignore-path .gitignore --ext .ts ./src ./stacks --fix"
   },
   "devDependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.87.0",
