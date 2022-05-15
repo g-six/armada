@@ -21,7 +21,11 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - name: Deploy ${{ matrix.node-version }}
-      run:
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: |
         export AWS_ACCESS_KEY_ID=$ARMADA_ACCESS_KEY_ID
         export AWS_SECRET_ACCESS_KEY=$ARMADA_SECRET_ACCESS_KEY
-        npm run deploy -- --stage int
+    - run: npm run deploy -- --stage int
