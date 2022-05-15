@@ -19,6 +19,7 @@ jobs:
       with:
         aws-access-key-id: $ARMADA_ACCESS_KEY_ID
         aws-secret-access-key: $ARMADA_SECRET_ACCESS_KEY
+        aws-region: ca-central-1
     - name: Build ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
