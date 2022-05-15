@@ -52,7 +52,7 @@ export function toErrorResponse(errors: Record<string, unknown>, status_code = 4
     }
 }
 
-export function toSuccessResponse(results: Record<string, unknown>, status_code = 200, headers = { 'Content-Type': 'application/json' }): ResponseJsonOutput {
+export function toSuccessResponse(results: Record<string, unknown>, status_code = 200, headers: Record<string, string> = { 'Content-Type': 'application/json' }): ResponseJsonOutput {
     let response: ResponseOutput = {
         type: ResponseErrorTypes.InvalidJsonRequest
     }

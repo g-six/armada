@@ -7,6 +7,7 @@ export async function activate(Username: string): Promise<AdminEnableUserCommand
 
     let record
     try {
+        console.log('Activating', Username)
         record = await client.send(
             new AdminEnableUserCommand({
                 UserPoolId: config.ARMADA_COGNITO_POOL_ID,
