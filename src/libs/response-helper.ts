@@ -7,7 +7,7 @@ interface JoiErrorDetails {
         key: string
     }
 }
-export function toErrorResponse(errors: Record<string, unknown>, status_code = 400, headers = { 'Content-Type': 'application/json' }): ResponseJsonOutput {
+export function toErrorResponse(errors: Record<string, unknown>, status_code = 400, headers: Record<string, string> = { 'Content-Type': 'application/json' }): ResponseJsonOutput {
     const response: ResponseOutput = {
         type: ResponseErrorTypes.InvalidRequestHeaders,
         errors,
