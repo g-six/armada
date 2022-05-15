@@ -4,6 +4,8 @@ export enum ResponseErrorTypes {
     InvalidJsonRequest = 'InvalidJsonRequest',
     InvalidJsonResultSet = 'InvalidJsonResultSet',
     NotFound = 'NotFound',
+    CognitoUserNotFound = 'UserNotFoundException',
+    CognitoUserAlreadyExists = 'UserAlreadyExistsException',
     Unauthorized = 'Unauthorized',
 }
 

@@ -1,4 +1,10 @@
 {
   "extends": "@tsconfig/node16/tsconfig.json",
-  "include": ["stacks"]
+  "include": ["stacks"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "generics/*": ["./src/generics/*"],
+    }
+  }
 }

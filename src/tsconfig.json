@@ -8,9 +8,9 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {
-      "generics": ["./generics/*"],
-      "libs": ["./libs/*"],
-      "services": ["./services/*"],
+      "generics/*": ["./generics/*"],
+      "libs/*": ["./libs/*"],
+      "services/*": ["./services/*"],
       "*": ["./*"]
     }
   }

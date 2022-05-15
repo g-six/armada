@@ -10,6 +10,10 @@
       "console": "integratedTerminal",
       "skipFiles": ["<node_internals>/**"],
       "env": {}
+      "eslint.format.enable": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  }
     }
   ]
 }

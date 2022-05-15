@@ -1,6 +1,6 @@
 import { DomainName } from '@aws-cdk/aws-apigatewayv2-alpha'
-import { StackContext, Api } from "@serverless-stack/resources"
-import { domain_props } from './domain-config';
+import { StackContext, Api } from '@serverless-stack/resources'
+import { domain_props } from './domain-config'
 
 export function ApiAuthStack(this: any, { stack }: StackContext) {
   const api = new Api(stack, "auth", {
