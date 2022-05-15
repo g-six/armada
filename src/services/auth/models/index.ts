@@ -1,6 +1,25 @@
-import { AdminCreateUserCommand, AdminCreateUserCommandOutput, AdminDisableUserCommand, AdminGetUserCommand, AdminGetUserCommandOutput, AdminSetUserPasswordCommand, CognitoIdentityProviderClient, MessageActionType } from '@aws-sdk/client-cognito-identity-provider'
+import { AdminCreateUserCommand, AdminCreateUserCommandOutput, AdminDisableUserCommand, AdminEnableUserCommand, AdminEnableUserCommandOutput, AdminGetUserCommand, AdminGetUserCommandOutput, AdminSetUserPasswordCommand, CognitoIdentityProviderClient, MessageActionType } from '@aws-sdk/client-cognito-identity-provider'
 import { cognito, config } from 'generics/config'
 import { ResponseErrorTypes } from 'generics/response-types'
+
+export async function activate(Username: string): Promise<AdminEnableUserCommandOutput | { error: string, message: string }> {
+    const client = new CognitoIdentityProviderClient(cognito)
+
+    let record
+    try {
+        record = await client.send(
+            new AdminEnableUserCommand({
+                UserPoolId: config.ARMADA_COGNITO_POOL_ID,
+                Username,
+            })
+        )
+    } catch (error) {
+        const { name, message } = error as Record<string, string>
+        record = { error: name, message }
+    }
+
+    return record
+}
 
 export async function signUp(
     email: string,

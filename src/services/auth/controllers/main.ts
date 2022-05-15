@@ -9,6 +9,39 @@ import { Session } from 'libs/session'
 import { AdminCreateUserCommandOutput, AdminGetUserCommandOutput } from '@aws-sdk/client-cognito-identity-provider'
 import { ResponseErrorTypes } from 'generics/response-types'
 import { sendTemplate } from 'libs/sendgrid-helper'
+import { decode, JwtPayload } from 'jsonwebtoken'
+
+export const activate: APIGatewayProxyHandlerV2 = async (event) => {
+    if (!event.queryStringParameters?.t) return {
+        statusCode: 400
+    }
+    try {
+        const { t: token } = event.queryStringParameters
+        const data = decode(token) as JwtPayload
+        const expires = new Intl.DateTimeFormat(undefined, {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            timeZone: 'America/Vancouver',
+            timeZoneName: 'short',
+        }).format(new Date(data.expires_at))
+        if (data.expires_at < Date.now()) {
+            throw {
+                name: 'token',
+                message: 'TOKEN_HAS_EXPIRED',
+                type: ResponseErrorTypes.InvalidToken,
+            }
+        }
+        return toSuccessResponse({
+            data,
+            expires,
+        })
+    } catch (e) {
+        return toErrorResponse(e as Record<string, unknown>)
+    }
+}
 
 export const signUp: APIGatewayProxyHandlerV2 = async (event) => {
     if (!event.body) return {

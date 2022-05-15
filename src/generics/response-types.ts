@@ -7,6 +7,7 @@ export enum ResponseErrorTypes {
     CognitoUserNotFound = 'UserNotFoundException',
     CognitoUserAlreadyExists = 'UserAlreadyExistsException',
     Unauthorized = 'Unauthorized',
+    InvalidToken = 'InvalidToken',
 }
 
 export enum ResponseSuccessTypes {
