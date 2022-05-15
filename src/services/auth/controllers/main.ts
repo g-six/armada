@@ -28,11 +28,11 @@ export const activate: APIGatewayProxyHandlerV2 = async (event) => {
             timeZoneName: 'short',
         }).format(new Date(data.expires_at))
         if (data.expires_at < Date.now()) {
-            throw {
+            return toErrorResponse({
                 name: 'token',
                 message: 'TOKEN_HAS_EXPIRED',
                 type: ResponseErrorTypes.InvalidToken,
-            }
+            }, 301, { Location: 'https://app.50stacksofgrey.com/auth/request-activation' })
         }
         return toSuccessResponse({
             data,
