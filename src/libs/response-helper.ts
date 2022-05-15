@@ -15,7 +15,10 @@ export function toErrorResponse(errors: Record<string, unknown>, status_code = 4
     let statusCode = status_code
 
     try {
-        const { name, message } = errors
+        const { name, message, type } = errors
+        if (type) {
+            response.type = type as ResponseErrorTypes
+        }
         const { details } = errors as unknown as { details: JoiErrorDetails[] }
         if (details) {
             response.errors = details.map((joi_error: JoiErrorDetails) => {
