@@ -5,7 +5,9 @@ export enum ResponseErrorTypes {
     InvalidJsonResultSet = 'InvalidJsonResultSet',
     NotFound = 'NotFound',
     CognitoUserNotFound = 'UserNotFoundException',
+    CognitoIncorrectCredentials = 'Incorrect username or password.',
     CognitoUserAlreadyExists = 'UserAlreadyExistsException',
+    CognitoLoginError = 'IncorrectEmailOrPassword',
     Unauthorized = 'Unauthorized',
     InvalidToken = 'InvalidToken',
 }
@@ -16,11 +18,12 @@ export enum ResponseSuccessTypes {
 }
 
 export type ResponseOutput = {
-    type: ResponseErrorTypes | ResponseSuccessTypes,
+    type: ResponseErrorTypes | ResponseSuccessTypes
     record?: Record<string, unknown>
     records?: Record<string, unknown>[]
     message?: string
     errors?: Record<string, unknown>
+    meta?: Record<string, unknown>
 }
 
 export type ResponseJsonOutput = {
