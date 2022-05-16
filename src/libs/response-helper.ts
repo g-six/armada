@@ -58,9 +58,12 @@ export function toSuccessResponse(results: Record<string, unknown>, status_code 
     }
     let statusCode = status_code
     try {
+        const { message, redirect_to, ...record } = results as Record<string, string>
         response = {
             type: ResponseSuccessTypes.Success,
-            record: results,
+            record,
+            message,
+            meta: { redirect_to },
         }
     } catch (e) {
         statusCode = 400
