@@ -16,6 +16,7 @@ export function ApiAuthStack(this: any, { stack }: StackContext) {
             path: 'auth',
         },
         routes: {
+            'POST /login': 'services/auth/controllers/main.login',
             'POST /signup': 'services/auth/controllers/main.signUp',
             'GET /activate': 'services/auth/controllers/main.activate',
         },

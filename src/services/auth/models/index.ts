@@ -1,6 +1,7 @@
-import { AdminCreateUserCommand, AdminCreateUserCommandOutput, AdminDisableUserCommand, AdminEnableUserCommand, AdminEnableUserCommandOutput, AdminGetUserCommand, AdminGetUserCommandOutput, AdminSetUserPasswordCommand, CognitoIdentityProviderClient, MessageActionType } from '@aws-sdk/client-cognito-identity-provider'
+import { AdminCreateUserCommand, AdminCreateUserCommandOutput, AdminDisableUserCommand, AdminEnableUserCommand, AdminEnableUserCommandOutput, AdminGetUserCommand, AdminGetUserCommandOutput, AdminSetUserPasswordCommand, AuthFlowType, CognitoIdentityProviderClient, GetUserCommand, InitiateAuthCommand, InitiateAuthCommandInput, InitiateAuthCommandOutput, MessageActionType } from '@aws-sdk/client-cognito-identity-provider'
 import { cognito, config } from 'generics/config'
 import { ResponseErrorTypes } from 'generics/response-types'
+import { hashCognitoSecret } from 'libs/session'
 
 export async function activate(Username: string): Promise<AdminEnableUserCommandOutput | { error: string, message: string }> {
     const client = new CognitoIdentityProviderClient(cognito)
@@ -20,6 +21,42 @@ export async function activate(Username: string): Promise<AdminEnableUserCommand
     }
 
     return record
+}
+
+export async function login(
+    email: string,
+    password: string
+): Promise<AdminGetUserCommandOutput | AdminCreateUserCommandOutput | { error: string }> {
+    const client = new CognitoIdentityProviderClient(cognito)
+
+    let record
+    try {
+        const input: InitiateAuthCommandInput = {
+            AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
+            ClientId: config.ARMADA_COGNITO_CLIENT_ID,
+            AuthParameters: {
+                USERNAME: email,
+                PASSWORD: password,
+                SECRET_HASH: hashCognitoSecret(email),
+            },
+        }
+        record = await client.send(
+            new InitiateAuthCommand(input)
+        ) as InitiateAuthCommandOutput
+        if (!record.AuthenticationResult) {
+            return { error: ResponseErrorTypes.CognitoUserAlreadyExists }
+        } else {
+            return record
+        }
+    } catch (error) {
+        // We need to catch NotAuthorizedException
+        const { message } = error as Record<string, string>
+        if (message === ResponseErrorTypes.CognitoIncorrectCredentials) {
+            record = { error: 'CognitoIncorrectCredentials' }
+        }
+    }
+
+    return record || { error: ResponseErrorTypes.InvalidJsonResultSet }
 }
 
 export async function signUp(

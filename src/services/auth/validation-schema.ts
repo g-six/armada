@@ -18,3 +18,15 @@ export const signup_schema = Joi.object({
         }),
     role_id: Joi.string(),
 })
+export const login_schema = Joi.object({
+    email: Joi.string()
+        .email({ minDomainSegments: 2 })
+        .required()
+        .messages({
+            'string.email': 'INVALID_EMAIL',
+        }),
+    password: Joi.string().required()
+        .messages({
+            'any.required': 'PASSWORD_REQUIRED',
+        }),
+})

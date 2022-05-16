@@ -2,11 +2,11 @@ import { APIGatewayProxyHandlerV2 } from 'aws-lambda'
 import { toErrorResponse, toSuccessResponse } from 'libs/response-helper'
 import SGMail from '@sendgrid/mail'
 import { encode, TAlgorithm } from 'jwt-simple'
-import { signup_schema } from 'services/auth/validation-schema'
+import { login_schema, signup_schema } from 'services/auth/validation-schema'
 import * as model from 'services/auth/models'
 import { config } from 'generics/config'
 import { Session } from 'libs/session'
-import { AdminCreateUserCommandOutput, AdminGetUserCommandOutput } from '@aws-sdk/client-cognito-identity-provider'
+import { AdminCreateUserCommandOutput, AdminGetUserCommandOutput, InitiateAuthCommandOutput } from '@aws-sdk/client-cognito-identity-provider'
 import { ResponseErrorTypes } from 'generics/response-types'
 import { sendTemplate } from 'libs/sendgrid-helper'
 import { decode, JwtPayload } from 'jsonwebtoken'
@@ -52,6 +52,55 @@ export const activate: APIGatewayProxyHandlerV2 = async (event) => {
             data,
             expires,
         }, status, headers)
+    } catch (e) {
+        return toErrorResponse(e as Record<string, unknown>)
+    }
+}
+
+export const login: APIGatewayProxyHandlerV2 = async (event) => {
+    if (!event.body) return {
+        statusCode: 400,
+    }
+    try {
+        const { email, password } = await login_schema.validateAsync(
+            JSON.parse(event.body), { abortEarly: false }
+        )
+
+        const auth_result = await model.login(email, password)
+        const record = auth_result as InitiateAuthCommandOutput
+        const exception = auth_result as { error: string }
+
+        if (record.AuthenticationResult && record.AuthenticationResult.IdToken) {
+            const { IdToken, RefreshToken } = record.AuthenticationResult
+            const { sub, exp: expires_at } = decode(IdToken) as JwtPayload
+            let redirect_to
+            if (event.headers.referer) {
+                redirect_to = `${event.headers.referer}dashboard`
+            }
+            return toSuccessResponse({
+                token: IdToken,
+                id: sub,
+                email,
+                expires_at,
+                refresh_token: RefreshToken,
+                message: `Hello, World! Your request was received at ${event.requestContext.time}.`,
+                redirect_to,
+            })
+        }
+
+        return toErrorResponse({
+            details: [{
+                context: { key: 'email' },
+                message: exception.error,
+                type: 'ClientInputError',
+            }, {
+                context: { key: 'password' },
+                message: exception.error,
+                type: 'ClientInputError',
+            }],
+            type: ResponseErrorTypes.CognitoLoginError,
+            message: exception.error || 'Error in login.',
+        })
     } catch (e) {
         return toErrorResponse(e as Record<string, unknown>)
     }
